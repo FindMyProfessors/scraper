@@ -1,4 +1,4 @@
-package main
+package models
 
 import "strings"
 
@@ -6,6 +6,17 @@ type School struct {
 	Name       string      `json:"name,omitempty"`
 	Professors []Professor `json:"professors"`
 	Courses    []Course    `json:"courses"`
+}
+
+func CollectCourses(school *School) map[string]Course {
+	courses := make(map[string]Course)
+	for _, professor := range school.Professors {
+		for _, course := range professor.Teaches {
+			course.Professors = append(course.Professors, professor)
+			courses[course.Code] = course
+		}
+	}
+	return courses
 }
 
 func (s School) RDFId() string {
