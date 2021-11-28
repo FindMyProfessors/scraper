@@ -1,28 +1,44 @@
 package main
 
 import (
-	"context"
-	"github.com/dgraph-io/dgo/v210/protos/api"
+	"fmt"
 	"log"
 	"os"
 	"scraper/database"
+	"scraper/models"
+	"scraper/scrapers"
+	"scraper/scrapers/schools"
+	"strings"
+	"sync"
 )
 
 func main() {
+	_ = database.Connect(os.Getenv("DATABASE_URL"), os.Getenv("API_KEY"))
 
-	dgraph := database.Connect(os.Getenv("DATABASE_URL"), os.Getenv("API_KEY"))
+	schoolsInput := os.Getenv("SCHOOLS")
 
-	txn := dgraph.NewTxn()
-	rdf := database.SchoolToRDF(database.GetValencia())
-	log.Println("rdf=", rdf)
-	response, err := txn.Mutate(context.Background(), &api.Mutation{SetNquads: []byte(rdf)})
-	if err != nil {
-		log.Fatal(err)
+	split := strings.Split(strings.ToLower(schoolsInput), ",")
+	for _, schoolName := range split {
+		var scraper scrapers.SchoolScraper
+		log.Println("Scraping ", schoolName)
+		switch strings.TrimSpace(schoolName) {
+		case "ucf":
+			scraper = schools.UCFScraper{}
+			break
+		case "valencia":
+			scraper = schools.ValenciaScraper{}
+			break
+		}
+		var wg sync.WaitGroup
+		wg.Add(len(split))
+		go func(school models.School) {
+			_, err := database.MutateDatabase(school)
+			if err != nil {
+				log.Println("Unable to mutate database. ", err)
+			}
+			fmt.Println("Mutated database for " + school.Name)
+			wg.Done()
+		}(scraper.GetSchool())
+		wg.Wait()
 	}
-	err = txn.Commit(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("response=", response)
 }

@@ -1,33 +1,47 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"github.com/dgraph-io/dgo/v210"
 	"github.com/dgraph-io/dgo/v210/protos/api"
+	"google.golang.org/grpc"
 	"log"
 	"scraper/models"
-	"strings"
+)
+
+var (
+	Dgraph *dgo.Dgraph
 )
 
 func Connect(url string, apiKey string) *dgo.Dgraph {
-	conn, err := dgo.DialCloud(url, apiKey)
+	if Dgraph != nil {
+		return Dgraph
+	}
+	var conn *grpc.ClientConn
+	var err error
+	if url == "172.28.208.1:9080" {
+		conn, err = grpc.Dial(url, grpc.WithInsecure())
+	} else {
+		conn, err = dgo.DialCloud(url, apiKey)
+	}
 	if err != nil {
 		fmt.Println("Error connecting to Dgraph")
 		log.Fatal(err)
 	}
-	return dgo.NewDgraphClient(api.NewDgraphClient(conn))
+	Dgraph = dgo.NewDgraphClient(api.NewDgraphClient(conn))
+	return Dgraph
 }
 
-func GetCourse(code string, name string) models.Course {
-	return models.Course{
-		Code:       code,
-		Name:       name,
-		Professors: []models.Professor{},
+func GetCourse(code string, name string) *models.Course {
+	return &models.Course{
+		Code: code,
+		Name: name,
 	}
 }
 
-func GetProfessor(name string, courses []models.Course) models.Professor {
-	return models.Professor{
+func GetProfessor(name string, courses []*models.Course) *models.Professor {
+	return &models.Professor{
 		Name:         name,
 		Teaches:      courses,
 		TotalRatings: 10,
@@ -38,12 +52,28 @@ func GetProfessor(name string, courses []models.Course) models.Professor {
 func GetValencia() models.School {
 	return models.School{
 		Name: "Valencia",
-		Professors: []models.Professor{GetProfessor("natalie_angelis", []models.Course{
+		Professors: []*models.Professor{GetProfessor("natalie_angelis", []*models.Course{
 			GetCourse("MAC1105H", "College Algebra Honors"),
 			GetCourse("MAC1114", "College Trigonometry"),
 			GetCourse("MAC2311", "Calculus 1"),
 		})},
 	}
+}
+
+func MutateDatabase(school models.School) (*api.Response, error) {
+	txn := Dgraph.NewTxn()
+	rdf := SchoolToRDF(school)
+	log.Println("rdf=", rdf)
+	response, err := txn.Mutate(context.Background(), &api.Mutation{SetNquads: []byte(rdf)})
+	if err != nil {
+		return nil, err
+	}
+	err = txn.Commit(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
 
 func SchoolToRDF(school models.School) string {
@@ -54,14 +84,16 @@ func SchoolToRDF(school models.School) string {
 
 	rdf += fmt.Sprintf("_:%s <School.name> \"%s\" .\n", schoolRDFId, school.Name)
 	rdf += fmt.Sprintf("_:%s <dgraph.type> \"%s\" .\n", schoolRDFId, "School")
-	courses := models.CollectCourses(&school)
-
-	for code := range courses {
-		rdf += fmt.Sprintf("_:%s <School.courses> _:%s .\n", schoolRDFId, code)
+	models.CollectCourses(&school)
+	for _, course := range school.Courses {
+		rdf += fmt.Sprintf("_:%s <School.courses> _:%s .\n", schoolRDFId, course.Code)
 	}
 	for _, professor := range school.Professors {
-		formattedProfessorName := strings.Replace(strings.ToLower(professor.Name), " ", "_", -1)
-		rdf += fmt.Sprintf("_:%s <School.professors> _:%s .\n", schoolRDFId, formattedProfessorName)
+		if len(professor.Name) == 0 {
+			log.Println("Professor name length = 0, ", professor)
+		} else {
+			rdf += fmt.Sprintf("_:%s <School.professors> _:%s .\n", schoolRDFId, professor.RDFId())
+		}
 	}
 
 	rdf += "\n"
@@ -79,15 +111,14 @@ func SchoolToRDF(school models.School) string {
 		rdf += "\n"
 	}
 
-	for _, course := range courses {
+	for _, course := range school.Courses {
 		rdf += fmt.Sprintf("_:%s <dgraph.type> \"%s\" .\n", course.Code, "Course")
 		rdf += fmt.Sprintf("_:%s <Course.code> \"%s\" .\n", course.Code, course.Code)
 		rdf += fmt.Sprintf("_:%s <Course.name> \"%s\" .\n", course.Code, course.Name)
 		rdf += fmt.Sprintf("_:%s <Course.school> _:%s .\n", course.Code, schoolRDFId)
 
 		for _, professor := range course.Professors {
-			rdfId := professor.RDFId()
-			rdf += fmt.Sprintf("_:%s <Course.professors> _:%s .\n", course.Code, rdfId)
+			rdf += fmt.Sprintf("_:%s <Course.professors> _:%s .\n", course.Code, professor)
 		}
 		rdf += "\n"
 	}
