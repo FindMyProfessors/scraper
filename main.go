@@ -15,9 +15,7 @@ import (
 func main() {
 	_ = database.Connect(os.Getenv("DATABASE_URL"), os.Getenv("API_KEY"))
 
-	schoolsInput := os.Getenv("SCHOOLS")
-
-	split := strings.Split(strings.ToLower(schoolsInput), ",")
+	split := strings.Split(strings.ToLower(os.Getenv("SCHOOLS")), ",")
 	for _, schoolName := range split {
 		var scraper scrapers.SchoolScraper
 		log.Println("Scraping ", schoolName)
@@ -26,7 +24,7 @@ func main() {
 			scraper = schools.UCFScraper{}
 			break
 		case "valencia":
-			scraper = schools.ValenciaScraper{}
+			scraper = &schools.ValenciaScraper{}
 			break
 		}
 		var wg sync.WaitGroup

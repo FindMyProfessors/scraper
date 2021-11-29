@@ -2,25 +2,28 @@ package models
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
 type School struct {
-	Name       string       `json:"name,omitempty"`
-	Professors []*Professor `json:"professors"`
-	Courses    []*Course    `json:"courses"`
+	Name       string      `json:"name,omitempty"`
+	Professors []Professor `json:"professors"`
+	Courses    []Course    `json:"courses"`
+}
+
+func (s *School) AddProfessor(professor Professor) []Professor {
+	s.Professors = append(s.Professors, professor)
+	return s.Professors
+}
+
+func (s *School) AddCourse(course Course) []Course {
+	s.Courses = append(s.Courses, course)
+	return s.Courses
 }
 
 func (s School) String() string {
 	return fmt.Sprintf("{name=%s, professors=%s, courses=%s}", s.Name, s.Professors, s.Courses)
-}
-
-func CollectCourses(school *School) {
-	for _, professor := range school.Professors {
-		for _, course := range professor.Teaches {
-			course.Professors = append(course.Professors, professor.Name)
-		}
-	}
 }
 
 func (s School) RDFId() string {
@@ -28,18 +31,27 @@ func (s School) RDFId() string {
 }
 
 type Professor struct {
-	Name         string    `json:"name,omitempty"`
-	Teaches      []*Course `json:"teaches,omitempty"`
-	TotalRatings int       `json:"totalRatings,omitempty"`
-	Rating       float64   `json:"rating,omitempty"`
+	FirstName    string   `json:"first_name,omitempty"`
+	LastName     string   `json:"last_name,omitempty"`
+	Teaches      []Course `json:"teaches,omitempty"`
+	TotalRatings int      `json:"totalRatings,omitempty"`
+	Rating       float64  `json:"rating,omitempty"`
 }
 
 func (p Professor) String() string {
-	return fmt.Sprintf("{name=%s, teaches=%s, totalRatings=%d, rating=%f}", p.Name, p.Teaches, p.TotalRatings, p.Rating)
+	return fmt.Sprintf("{first_name=%s, last_name=%s, teaches=%s, totalRatings=%d, rating=%f}", p.FirstName, p.LastName, p.Teaches, p.TotalRatings, p.Rating)
 }
 
 func (p Professor) RDFId() string {
-	return strings.Replace(strings.Replace(strings.Replace(strings.ToLower(p.Name), " ", "_", -1), "'", "_", -1), "\\", "/", -1)
+	rdf := strings.Replace(strings.Replace(strings.Replace(strings.ToLower(p.FirstName+" "+p.LastName), " ", "_", -1), "'", "_", -1), "\\", "/", -1)
+	if rdf == "" {
+		log.Fatalln(p.String())
+	}
+	return rdf
+}
+
+func (p Professor) Name() string {
+	return p.FirstName + " " + p.LastName
 }
 
 type Course struct {

@@ -20,7 +20,7 @@ func Connect(url string, apiKey string) *dgo.Dgraph {
 	}
 	var conn *grpc.ClientConn
 	var err error
-	if url == "172.28.208.1:9080" {
+	if apiKey == "" {
 		conn, err = grpc.Dial(url, grpc.WithInsecure())
 	} else {
 		conn, err = dgo.DialCloud(url, apiKey)
@@ -31,33 +31,6 @@ func Connect(url string, apiKey string) *dgo.Dgraph {
 	}
 	Dgraph = dgo.NewDgraphClient(api.NewDgraphClient(conn))
 	return Dgraph
-}
-
-func GetCourse(code string, name string) *models.Course {
-	return &models.Course{
-		Code: code,
-		Name: name,
-	}
-}
-
-func GetProfessor(name string, courses []*models.Course) *models.Professor {
-	return &models.Professor{
-		Name:         name,
-		Teaches:      courses,
-		TotalRatings: 10,
-		Rating:       4.0,
-	}
-}
-
-func GetValencia() models.School {
-	return models.School{
-		Name: "Valencia",
-		Professors: []*models.Professor{GetProfessor("natalie_angelis", []*models.Course{
-			GetCourse("MAC1105H", "College Algebra Honors"),
-			GetCourse("MAC1114", "College Trigonometry"),
-			GetCourse("MAC2311", "Calculus 1"),
-		})},
-	}
 }
 
 func MutateDatabase(school models.School) (*api.Response, error) {
@@ -84,12 +57,12 @@ func SchoolToRDF(school models.School) string {
 
 	rdf += fmt.Sprintf("_:%s <School.name> \"%s\" .\n", schoolRDFId, school.Name)
 	rdf += fmt.Sprintf("_:%s <dgraph.type> \"%s\" .\n", schoolRDFId, "School")
-	models.CollectCourses(&school)
+	//school = models.CollectCourses(school)
 	for _, course := range school.Courses {
 		rdf += fmt.Sprintf("_:%s <School.courses> _:%s .\n", schoolRDFId, course.Code)
 	}
 	for _, professor := range school.Professors {
-		if len(professor.Name) == 0 {
+		if len(professor.FirstName) == 0 {
 			log.Println("Professor name length = 0, ", professor)
 		} else {
 			rdf += fmt.Sprintf("_:%s <School.professors> _:%s .\n", schoolRDFId, professor.RDFId())
@@ -100,7 +73,7 @@ func SchoolToRDF(school models.School) string {
 
 	for _, professor := range school.Professors {
 		rdfId := professor.RDFId()
-		rdf += fmt.Sprintf("_:%s <Professor.name> \"%s\" .\n", rdfId, professor.Name)
+		rdf += fmt.Sprintf("_:%s <Professor.name> \"%s\" .\n", rdfId, professor.Name())
 		rdf += fmt.Sprintf("_:%s <dgraph.type> \"%s\" .\n", rdfId, "Professor")
 		rdf += fmt.Sprintf("_:%s <Professor.totalRatings> \"%d\" .\n", rdfId, professor.TotalRatings)
 		rdf += fmt.Sprintf("_:%s <Professor.rating> \"%f\" .\n", rdfId, professor.Rating)
