@@ -5,7 +5,6 @@ import (
 )
 
 type SchoolScraper interface {
-	StartRMSScraper()
 	StartSchoolScraper()
 	GetSchool() models.School
 }

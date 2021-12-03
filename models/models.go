@@ -22,6 +22,12 @@ func (s *School) AddCourse(course Course) []Course {
 	return s.Courses
 }
 
+func (s *School) SetProfessor(index int, professor Professor) []Professor {
+	s.Professors[index] = professor
+	fmt.Println("Set professor: ", professor.String())
+	return s.Professors
+}
+
 func (s School) String() string {
 	return fmt.Sprintf("{name=%s, professors=%s, courses=%s}", s.Name, s.Professors, s.Courses)
 }

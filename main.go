@@ -21,7 +21,7 @@ func main() {
 		log.Println("Scraping ", schoolName)
 		switch strings.TrimSpace(schoolName) {
 		case "ucf":
-			scraper = schools.UCFScraper{}
+			scraper = &schools.UCFScraper{}
 			break
 		case "valencia":
 			scraper = &schools.ValenciaScraper{}

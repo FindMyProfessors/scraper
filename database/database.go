@@ -6,6 +6,7 @@ import (
 	"github.com/dgraph-io/dgo/v210"
 	"github.com/dgraph-io/dgo/v210/protos/api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/encoding/gzip"
 	"log"
 	"scraper/models"
 )
@@ -21,7 +22,10 @@ func Connect(url string, apiKey string) *dgo.Dgraph {
 	var conn *grpc.ClientConn
 	var err error
 	if apiKey == "" {
-		conn, err = grpc.Dial(url, grpc.WithInsecure())
+		dialOpts := append([]grpc.DialOption{},
+			grpc.WithInsecure(),
+			grpc.WithDefaultCallOptions(grpc.UseCompressor(gzip.Name)))
+		conn, err = grpc.Dial(url, dialOpts...)
 	} else {
 		conn, err = dgo.DialCloud(url, apiKey)
 	}
@@ -37,11 +41,12 @@ func MutateDatabase(school models.School) (*api.Response, error) {
 	txn := Dgraph.NewTxn()
 	rdf := SchoolToRDF(school)
 	log.Println("rdf=", rdf)
-	response, err := txn.Mutate(context.Background(), &api.Mutation{SetNquads: []byte(rdf)})
+	ctx := context.Background()
+	response, err := txn.Mutate(ctx, &api.Mutation{SetNquads: []byte(rdf)})
 	if err != nil {
 		return nil, err
 	}
-	err = txn.Commit(context.Background())
+	err = txn.Commit(ctx)
 	if err != nil {
 		return nil, err
 	}
