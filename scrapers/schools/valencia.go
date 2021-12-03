@@ -98,14 +98,14 @@ func (U *ValenciaScraper) StartSchoolScraper() {
 							Teaches:   []models.Course{},
 						}
 					}
-					doesTeachThisClass := func(courses []models.Course) bool {
+					doesTeachThisClass := func() bool {
 						for _, c := range professor.Teaches {
 							if c.Code == course.Code {
 								return true
 							}
 						}
 						return false
-					}(professor.Teaches)
+					}()
 					if !doesTeachThisClass {
 						professor.Teaches = append(professor.Teaches, course)
 						course.Professors = append(course.Professors, professor.RDFId())
