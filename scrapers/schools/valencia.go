@@ -146,7 +146,7 @@ func (U *ValenciaScraper) GetSchool() models.School {
 	}
 	U.StartSchoolScraper()
 
-	U.school = rate_my_professor.Scrape(&U.school, 1544, 17862, 16828, 17341, 13626, 13651)
+	U.school = rate_my_professor.StartScrape(&U.school, 1544, 17862, 16828, 17341, 13626, 13651)
 
 	fmt.Println("courses=", U.school.Courses)
 	fmt.Println("professors=", U.school.Professors)
