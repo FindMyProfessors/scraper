@@ -65,7 +65,7 @@ func (U *ValenciaScraper) StartSchoolScraper() {
 				switch cellCursor {
 				case 0:
 					courseCode := selection.Find("strong").Text()
-					courseName := strings.Replace(selection.Text()[len(courseCode):], "\\", "/", -1)
+					courseName := strings.ReplaceAll(selection.Text()[len(courseCode):], "\\", "/")
 					log.Println("courseCode=", courseCode)
 					log.Println("courseName=", courseName)
 					course = courseMap[courseCode]

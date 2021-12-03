@@ -33,7 +33,7 @@ func (s School) String() string {
 }
 
 func (s School) RDFId() string {
-	return strings.Replace(strings.Replace(strings.Replace(strings.ToLower(s.Name), " ", "_", -1), "'", "_", -1), "\\", "/", -1)
+	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(s.Name), " ", "_"), "'", "_"), "\\", "/")
 }
 
 type Professor struct {
@@ -49,7 +49,7 @@ func (p Professor) String() string {
 }
 
 func (p Professor) RDFId() string {
-	rdf := strings.Replace(strings.Replace(strings.Replace(strings.ToLower(p.FirstName+" "+p.LastName), " ", "_", -1), "'", "_", -1), "\\", "/", -1)
+	rdf := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(p.FirstName+" "+p.LastName), " ", "_"), "'", "_"), "\\", "/")
 	if rdf == "" {
 		log.Fatalln(p.String())
 	}
