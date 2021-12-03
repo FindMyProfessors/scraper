@@ -1,84 +1,46 @@
 package rate_my_professor
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"scraper/models"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 )
 
 type RMPProfessor struct {
-	FirstName     string `json:"tFname" bson:"firstName"`
-	MiddleName    string `json:"tMiddlename" bson:"middleName"`
-	LastName      string `json:"tLname" bson:"lastName"`
-	RatingsCount  int    `json:"tNumRatings" bson:"ratingCount"`
-	RatingClass   string `json:"rating_class" bson:"ratingClass"`
-	OverallRating string `json:"overall_rating" bson:"overallRating"`
+	FirstName             string  `json:"firstName"`
+	MiddleName            string  `json:"middleName"`
+	LastName              string  `json:"lastName"`
+	RatingsCount          int     `json:"numRatings"`
+	OverallRating         float64 `json:"avgRatingRounded"`
+	WouldTakeAgainPercent float64 `json:"wouldTakeAgainPercentRounded"`
 }
 
-func Scrape(school *models.School, schoolIDs ...int) models.School {
-	var scrapeFunction func(page int) bool
-	type Model struct {
-		Professors []RMPProfessor `json:"professors"`
-		Total      int            `json:"searchResultsTotal"`
-		Remaining  int            `json:"remaining"`
-		Type       string         `json:"type"`
-	}
-	completeModel := Model{}
-
-	var wg sync.WaitGroup
-	wg.Add(len(schoolIDs))
+func StartScrape(school *models.School, schoolIDs ...int) models.School {
+	arr := make([]RMPProfessor, 0)
 	for _, id := range schoolIDs {
-		go func(id int) {
-			scrapeFunction = func(page int) bool {
-				url := fmt.Sprintf("https://www.ratemyprofessors.com/filter/professor/?&page=%d&filter=teacherlastname_sort_s+asc&query=**&queryoption=TEACHER&queryBy=schoolId&sid=%d", page, id)
-				response, err := http.Get(url)
-				if err != nil {
-					log.Fatalf("unable to make request: %s\n", err)
-				}
-				data, err := ioutil.ReadAll(response.Body)
-				if err != nil {
-					log.Fatalf("unable to read request: %s\n", err)
-				}
-				defer func(Body io.ReadCloser) {
-					err := Body.Close()
-					if err != nil {
-						fmt.Println("error occurred: ", err)
-					}
-				}(response.Body)
-				var model Model
-				err = json.Unmarshal(data, &model)
-				if err != nil {
-					log.Fatalf("unable unmarshal data: %s\n", err)
-				}
-				for _, professor := range model.Professors {
-					completeModel.Professors = append(completeModel.Professors, professor)
-				}
-				if model.Remaining == 0 {
-					return false
-				}
-				return scrapeFunction(page + 1)
-			}
-			scrapeFunction(1)
-			wg.Done()
-		}(id)
+		arr = append(arr, scrape(make([]RMPProfessor, 0), "", id)...)
 	}
-	wg.Wait()
 
-	isSameProfessor := func(professor models.Professor, rmsProfessor struct {
-		FirstName     string `json:"tFname" bson:"firstName"`
-		MiddleName    string `json:"tMiddlename" bson:"middleName"`
-		LastName      string `json:"tLname" bson:"lastName"`
-		RatingsCount  int    `json:"tNumRatings" bson:"ratingCount"`
-		RatingClass   string `json:"rating_class" bson:"ratingClass"`
-		OverallRating string `json:"overall_rating" bson:"overallRating"`
-	}) bool {
+	sort.SliceStable(arr[:], func(i, j int) bool {
+		return strings.Compare(arr[i].LastName, arr[j].LastName) == -1
+	})
+	log.Println(arr)
+
+	return crossReference(school, arr)
+}
+
+func crossReference(school *models.School, rmpProfessors []RMPProfessor) models.School {
+	isSameProfessor := func(professor models.Professor, rmsProfessor RMPProfessor) bool {
 		if professor.FirstName == rmsProfessor.FirstName {
 			if professor.LastName == rmsProfessor.LastName {
 				return true
@@ -112,36 +74,116 @@ func Scrape(school *models.School, schoolIDs ...int) models.School {
 		return false
 	}
 
-	var wg2 sync.WaitGroup
-	wg2.Add(len(completeModel.Professors))
-	for _, anonProfessor := range completeModel.Professors {
+	var wg sync.WaitGroup
+	wg.Add(len(rmpProfessors))
+	for _, rmpProfessor := range rmpProfessors {
 		complete := false
-		go func(anonProfessor RMPProfessor) {
+		go func(rmpProfessor RMPProfessor) {
 			for index, professor := range school.Professors {
 				if complete {
 					break
 				}
-				if isSameProfessor(professor, anonProfessor) {
-					var rating float64
-					if anonProfessor.OverallRating == "N/A" {
-						rating = 0.0
-					} else {
-						float, err := strconv.ParseFloat(anonProfessor.OverallRating, 64)
-						if err != nil {
-							log.Fatalln("error occurred ", err)
-						} else {
-							rating = float * float64(anonProfessor.RatingsCount)
-						}
-					}
-					professor.Rating += rating
-					professor.TotalRatings += anonProfessor.RatingsCount
+				if isSameProfessor(professor, rmpProfessor) {
+					// TODO: Look into a collision function, might possibly need to scrape all of the reviews for the professor.
+					professor.Rating = rmpProfessor.OverallRating
+					professor.TotalRatings = rmpProfessor.RatingsCount
 					school.SetProfessor(index, professor)
 					complete = true
 				}
 			}
-			wg2.Done()
-		}(anonProfessor)
+			wg.Done()
+		}(rmpProfessor)
 	}
-	wg2.Wait()
+	wg.Wait()
 	return *school
+}
+
+func scrape(professors []RMPProfessor, cursor string, schoolId int) []RMPProfessor {
+	base64SchoolIdCursor := base64.StdEncoding.EncodeToString([]byte("School-" + strconv.Itoa(schoolId)))
+	log.Println("base64SchoolIdCursor=", base64SchoolIdCursor)
+
+	m := make(map[string]interface{})
+	m["query"] = "query NewSearch($schoolId: ID, $first: Int!, $last: Int!, $cursor: String!){newSearch{teachers(query:{text:\"\",schoolID:$schoolId} first: $first last: $last, after: $cursor) {edges {node {id firstName lastName numRatings avgRatingRounded wouldTakeAgainPercentRounded }} pageInfo {hasNextPage endCursor}}}}"
+	m["variables"] = struct {
+		SchoolId string `json:"schoolId"`
+		First    int    `json:"first"`
+		Last     int    `json:"last"`
+		Cursor   string `json:"cursor"`
+	}{base64SchoolIdCursor, 1000, 1000, cursor}
+
+	jsonBytes, err := json.Marshal(m)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println("json:" + string(jsonBytes))
+
+	request, err := http.NewRequest("POST", "https://www.ratemyprofessors.com/graphql", bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	request.Header.Set("Authorization", "Basic dGVzdDp0ZXN0")
+	request.Header.Set("Content-Type", "application/json")
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}(response.Body)
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println("body=", string(body))
+
+	model, err := parse(body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, prof := range model.Data.NewSearch.Teachers.Professors {
+		prof.Professor.WouldTakeAgainPercent = math.Ceil(prof.Professor.WouldTakeAgainPercent*100) / 100
+		prof.Professor.OverallRating = math.Ceil(prof.Professor.OverallRating*100) / 100
+		professors = append(professors, prof.Professor)
+	}
+
+	pageInfo := model.Data.NewSearch.Teachers.PageInfo
+
+	log.Println("EndCursor=", pageInfo.EndCursor)
+	log.Println("HasNextPage=", pageInfo.HasNextPage)
+
+	if pageInfo.HasNextPage {
+		return scrape(professors, pageInfo.EndCursor, schoolId)
+	}
+	return professors
+}
+
+type Model struct {
+	Data struct {
+		NewSearch struct {
+			Teachers struct {
+				Professors []struct {
+					Professor RMPProfessor `json:"node"`
+				} `json:"edges"`
+				PageInfo struct {
+					EndCursor   string `json:"endCursor"`
+					HasNextPage bool   `json:"hasNextPage"`
+				} `json:"pageInfo"`
+			} `json:"teachers"`
+		} `json:"newSearch"`
+	} `json:"data"`
+}
+
+func parse(body []byte) (Model, error) {
+	var model Model
+	err := json.Unmarshal(body, &model)
+	if err != nil {
+		return Model{}, err
+	}
+	return model, nil
 }

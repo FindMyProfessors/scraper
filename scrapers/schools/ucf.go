@@ -32,8 +32,8 @@ func (U *UCFScraper) StartSchoolScraper() {
 	professorMap := make(map[string]models.Professor, 0)
 
 	var wg sync.WaitGroup
+	wg.Add(len(modalities))
 	for _, mode := range modalities {
-		wg.Add(1)
 		var url = fmt.Sprintf("https://cdl.ucf.edu/wp-content/themes/cdl/lib/course-search-ajax.php?call=classes&term=1730&prefix=&catalog=&title=&instructor=&career=&college=&department=&mode=%s&_=1631687421296", mode)
 		fmt.Println("url=" + url)
 		go func(url string) {
@@ -120,7 +120,7 @@ func (U *UCFScraper) GetSchool() models.School {
 	}
 	U.StartSchoolScraper()
 
-	U.school = rate_my_professor.Scrape(&U.school, 1082, 15516, 5567, 5400)
+	U.school = rate_my_professor.StartScrape(&U.school, 1082, 15516, 5567, 5400)
 
 	return U.school
 }
