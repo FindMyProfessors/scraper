@@ -1,5 +1,23 @@
 version: "3.5"
 services:
+  zero:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data:/dgraph
+    ports:
+      - "5080:5080"
+      - "6080:6080"
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  alpha:
+    image: dgraph/dgraph:latest
+    volumes:
+      - /tmp/data:/dgraph
+    ports:
+      - "8080:8080"
+      - "9080:9080"
+    restart: on-failure
+    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --security whitelist=172.22.0.1,172.18.0.0/16
   scraper:
     tty: true
     build:
@@ -7,3 +25,6 @@ services:
       dockerfile: ./Dockerfile
     env_file:
       - .env
+    depends_on:
+      - alpha
+      - zero
