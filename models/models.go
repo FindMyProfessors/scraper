@@ -49,7 +49,7 @@ func (p Professor) String() string {
 }
 
 func (p Professor) RDFId() string {
-	rdf := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(p.FirstName+" "+p.LastName), " ", "_"), "'", "_"), "\\", "/")
+	rdf := strings.ReplaceAll(strings.ReplaceAll(strings.ToLower(p.FirstName+" "+p.LastName), " ", "_"), "'", "_")
 	if rdf == "" {
 		log.Fatalln(p.String())
 	}
