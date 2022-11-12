@@ -1,0 +1,201 @@
+directive @goField(
+    forceResolver: Boolean
+    name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+directive @pagination(maxLength: Int!) on FIELD_DEFINITION
+
+type ChartValue {
+    value: Float!
+    month: String!
+    year: Int!
+}
+
+interface Connection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+}
+
+type Course {
+    id: ID!
+    name: String!
+    code: String!
+    school: School
+    taughtBy(first: Int! = 50, after: String): ProfessorConnection
+}
+
+type CourseConnection implements Connection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    courses: [Course!]!
+}
+
+enum Grade {
+    A_PLUS
+    A
+    A_MINUS
+    B_PLUS
+    B
+    B_MINUS
+    C_PLUS
+    C
+    C_MINUS
+    D_PLUS
+    D
+    D_MINUS
+    F_PLUS
+    F
+    F_MINUS
+    INCOMPLETE
+    WITHDRAWN
+    NOT_SURE
+    OTHER
+}
+
+type Mutation {
+    createSchool(input: NewSchool!): School!
+    createProfessor(schoolId: ID!, input: NewProfessor!): Professor
+    createCourse(schoolId: ID!, input: NewCourse!): Course
+    createReview(professorId: ID!, input: NewReview!): Review
+    mergeProfessor(
+        schoolProfessorId: ID!
+        rmpProfessorId: ID!
+        input: NewProfessor!
+    ): Professor
+}
+
+input NewCourse {
+    name: String!
+    code: String!
+}
+
+input NewProfessor {
+    firstName: String!
+    lastName: String!
+    rmpId: String
+}
+
+input NewReview {
+    quality: Float!
+    difficulty: Float!
+    time: RFC3339Time!
+    tags: [Tag!]!
+    grade: Grade!
+}
+
+input NewSchool {
+    name: String!
+}
+
+type PageInfo {
+    startCursor: String!
+    endCursor: String!
+    hasPreviousPage: Boolean!
+    hasNextPage: Boolean!
+}
+
+type Professor {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    linked: Boolean!
+    rating(topKPercentage: Float): Rating!
+    analysis: ProfessorAnalysis!
+    school: School!
+    reviews(first: Int! = 50, after: String): ReviewConnection!
+    teaches(first: Int! = 50, after: String): CourseConnection!
+}
+
+type ProfessorAnalysis {
+    tagAmount: [TagAmount!]!
+    averageRatingValues: [ChartValue!]
+}
+
+type ProfessorConnection implements Connection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    professors: [Professor!]!
+}
+
+type Query {
+    professorByRMPId(rmpId: String!): Professor
+    professor(id: ID!): Professor
+    school(id: ID!): School
+    schools(first: Int! = 50, after: String): SchoolConnection!
+    professors(
+        schoolId: ID!
+        first: Int! = 25
+        after: String
+    ): ProfessorConnection!
+}
+
+scalar RFC3339Time
+
+type Rating {
+    ratingAmount: Int!
+    totalQualityAverage: Float!
+    topKMostRecentQualityAverage: Float!
+    totalDifficultyAverage: Float!
+    topKMostRecentDifficultyAverage: Float!
+    averageGrade: Grade!
+}
+
+type Review {
+    id: ID!
+    quality: Float!
+    difficulty: Float!
+    time: RFC3339Time!
+    tags: [Tag!]!
+    grade: Grade!
+}
+
+type ReviewConnection implements Connection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    reviews: [Review!]!
+}
+
+type School {
+    id: ID!
+    name: String!
+
+    """
+    Returns a list of professors that teach at this school
+    """
+    courseCodes: [String]!
+    courses(first: Int! = 50, after: String): CourseConnection!
+    professors(first: Int! = 50, after: String): ProfessorConnection!
+}
+
+type SchoolConnection implements Connection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    schools: [School!]!
+}
+
+enum Tag {
+    TOUGH_GRADER
+    GET_READY_TO_READ
+    PARTICIPATION_MATTERS
+    EXTRA_CREDIT
+    GROUP_PROJECTS
+    AMAZING_LECTURES
+    CLEAR_GRADING_CRITERIA
+    GIVES_GOOD_FEEDBACK
+    INSPIRATIONAL
+    LOTS_OF_HOMEWORK
+    HILARIOUS
+    BEWARE_OF_POP_QUIZZES
+    SO_MANY_PAPERS
+    CARING
+    RESPECTED
+    LECTURE_HEAVY
+    GRADED_BY_FEW_THINGS
+    ACCESSIBLE_OUTSIDE_CLASS
+    ONLINE_SAVVY
+}
+
+type TagAmount {
+    tag: Tag!
+    amount: Int!
+}
