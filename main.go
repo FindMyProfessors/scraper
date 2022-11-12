@@ -1,17 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/FindMyProfessors/scraper/model"
 	"github.com/FindMyProfessors/scraper/schools"
+	"github.com/FindMyProfessors/scraper/schools/ucf"
+	"github.com/FindMyProfessors/scraper/schools/valencia"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+	"os"
 	"strconv"
 	"strings"
 )
 
 var (
-	SchoolScraperMap = []schools.SchoolScraper{&schools.UCFScraper{}, &schools.ValenciaScraper{}}
+	SchoolScraperMap = []schools.SchoolScraper{&ucf.Scraper{}, &valencia.ValenciaScraper{}}
 )
 
 func main() {
@@ -20,8 +24,22 @@ func main() {
 	scraper := GetSchoolScraper()
 
 	fmt.Printf("Starting scraping of %s now\n", scraper.Name())
-	scraper.SetTerm(GetTerm(scraper))
-	scraper.Scrape()
+	term := GetTerm(scraper)
+	scraper.SetTerm(term)
+	school, err := scraper.Scrape()
+	if err != nil {
+		panic(err)
+	}
+	marshal, err := json.Marshal(*school)
+	if err != nil {
+		panic(err)
+	}
+	fileName := fmt.Sprintf("%d-%s.json", term.Year, term.Semester)
+	err = os.WriteFile(fileName, marshal, 0644)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Wrote %s to %s\n", school.Name, fileName)
 }
 
 func GetSchoolScraper() schools.SchoolScraper {

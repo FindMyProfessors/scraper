@@ -1,4 +1,4 @@
-package schools
+package valencia
 
 import "github.com/FindMyProfessors/scraper/model"
 
@@ -6,7 +6,7 @@ type ValenciaScraper struct {
 	term model.Term
 }
 
-func (u *ValenciaScraper) Scrape() *model.School {
+func (u *ValenciaScraper) Scrape() (*model.School, error) {
 	//TODO implement me
 	panic("implement me")
 }

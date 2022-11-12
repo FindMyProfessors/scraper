@@ -25,22 +25,34 @@ func (s Semester) GetIndex() int {
 }
 
 type Term struct {
-	Year     int
-	Semester Semester
-	ID       string
+	Year     int      `json:"year,omitempty"`
+	Semester Semester `json:"semester,omitempty"`
+	ID       string   `json:"id,omitempty"`
 }
 
 type School struct {
+	Name       string       `json:"name,omitempty"`
+	Professors []*Professor `json:"professors,omitempty"`
+	Courses    []*Course    `json:"courses,omitempty"`
 }
 
 type Professor struct {
-	FirstName string
-	LastName  string
-	RMPId     string
-	Courses   map[string]Course
+	FirstName string             `json:"firstname,omitempty"`
+	LastName  string             `json:"lastName,omitempty"`
+	RMPId     string             `json:"id,omitempty"`
+	Courses   map[string]*Course `json:"courses,omitempty"`
+	Reviews   []*Review          `json:"reviews,omitempty"`
 }
 
 type Course struct {
-	Name string
-	Code string
+	Name string `json:"name,omitempty"`
+	Code string `json:"code,omitempty"`
+}
+
+type Review struct {
+	Quality    float64 `json:"qualityRating"`
+	Difficulty float64 `json:"difficultyRatingRounded"`
+	DateString string  `json:"date"`
+	RatingTags string  `json:"ratingTags"`
+	Grade      string  `json:"grade"`
 }
