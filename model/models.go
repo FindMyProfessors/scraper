@@ -218,7 +218,7 @@ func GetTagByString(tagString string) (Tag, error) {
 // RMPTimeConstant Refer to the time.Layout type for more info
 const RMPTimeConstant = "2006-01-02 15:04:05 -0700 MST"
 
-func (r Review) UnmarshalJSON(bytes []byte) (err error) {
+func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 	var data map[string]any
 
 	if err = json.Unmarshal(bytes, &data); err != nil {
@@ -250,6 +250,8 @@ func (r Review) UnmarshalJSON(bytes []byte) (err error) {
 			tags = append(tags, tag)
 		}
 		r.Tags = tags
+	} else {
+		r.Tags = []Tag{}
 	}
 
 	gradeString := data["grade"].(string)
