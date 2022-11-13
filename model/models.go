@@ -77,6 +77,14 @@ const (
 	TagCaring                 Tag = "CARING"
 	TagRespected              Tag = "RESPECTED"
 	TagLectureHeavy           Tag = "LECTURE_HEAVY"
+	TagTestsAreTough          Tag = "TESTS_ARE_TOUGH"
+	TagTestHeavy              Tag = "TEST_HEAVY"
+	TagWouldTakeAgain         Tag = "WOULD_TAKE_AGAIN"
+	TagTestsNotMany           Tag = "TESTS_NOT_MANY"
+	TagSkipClassYouWontPass   Tag = "SKIP_CLASS_YOU_WONT_PASS"
+	TagCaresAboutStudents     Tag = "CARES_ABOUT_STUDENTS"
+	TagRespectedByStudents    Tag = "RESPECTED_BY_STUDENTS"
+	TagExtraCreditOffered     Tag = "EXTRA_CREDIT_OFFERED"
 	TagGradedByFewThings      Tag = "GRADED_BY_FEW_THINGS"
 	TagAccessibleOutsideClass Tag = "ACCESSIBLE_OUTSIDE_CLASS"
 	TagOnlineSavvy            Tag = "ONLINE_SAVVY"
@@ -84,7 +92,7 @@ const (
 
 func (t Tag) IsValid() bool {
 	switch t {
-	case TagToughGrader, TagGetReadyToRead, TagParticipationMatters, TagExtraCredit, TagGroupProjects, TagAmazingLectures, TagClearGradingCriteria, TagGivesGoodFeedback, TagInspirational, TagLotsOfHomework, TagHilarious, TagBewareOfPopQuizzes, TagSoManyPapers, TagCaring, TagRespected, TagLectureHeavy, TagGradedByFewThings, TagAccessibleOutsideClass, TagOnlineSavvy:
+	case TagToughGrader, TagExtraCreditOffered, TagRespectedByStudents, TagCaresAboutStudents, TagTestsNotMany, TagTestsAreTough, TagWouldTakeAgain, TagSkipClassYouWontPass, TagTestHeavy, TagGetReadyToRead, TagParticipationMatters, TagExtraCredit, TagGroupProjects, TagAmazingLectures, TagClearGradingCriteria, TagGivesGoodFeedback, TagInspirational, TagLotsOfHomework, TagHilarious, TagBewareOfPopQuizzes, TagSoManyPapers, TagCaring, TagRespected, TagLectureHeavy, TagGradedByFewThings, TagAccessibleOutsideClass, TagOnlineSavvy:
 		return true
 	}
 	return false
@@ -187,8 +195,20 @@ type Review struct {
 }
 
 func GetTagByString(tagString string) (Tag, error) {
-	formattedTagString := strings.ReplaceAll(strings.ToUpper(tagString), " ", "_")
+	formattedTagString := strings.ReplaceAll(
+		strings.ReplaceAll(
+			strings.ReplaceAll(
+				strings.ReplaceAll(
+					strings.TrimSpace(
+						strings.ToUpper(tagString)),
+					" ", "_"),
+				"?", ""),
+			".", ""),
+		"'", "",
+	)
+
 	tag := Tag(formattedTagString)
+	fmt.Printf("formattedTagString=%s\n", formattedTagString)
 	if !tag.IsValid() {
 		return "", fmt.Errorf("%s is an invalid Tag", tagString)
 	}
