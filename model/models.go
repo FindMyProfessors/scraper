@@ -38,15 +38,17 @@ type Term struct {
 }
 
 type School struct {
+	ID         *string      `json:"id,omitempty"`
 	Name       string       `json:"name,omitempty"`
 	Professors []*Professor `json:"professors,omitempty"`
 	Courses    []*Course    `json:"courses,omitempty"`
 }
 
 type Professor struct {
+	ID        string             `json:"id"`
 	FirstName string             `json:"firstname,omitempty"`
 	LastName  string             `json:"lastName,omitempty"`
-	RMPId     string             `json:"id,omitempty"`
+	RMPId     string             `json:"rmpId,omitempty"`
 	Courses   map[string]*Course `json:"courses,omitempty"`
 	Reviews   []*Review          `json:"reviews,omitempty"`
 }
