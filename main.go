@@ -101,7 +101,7 @@ func GetTerm(scraper schools.SchoolScraper) model.Term {
 
 func ShouldWriteToFile() bool {
 	for {
-		fmt.Printf("Would you like to write the data to a file? ")
+		fmt.Printf("Would you like to write the data to a file (y/n)? ")
 
 		var choice string
 		_, err := fmt.Scanf("%s", &choice)
@@ -124,7 +124,7 @@ func ShouldWriteToFile() bool {
 
 func ShouldSendToFMP() bool {
 	for {
-		fmt.Printf("Would you like to send the data to FMP? ")
+		fmt.Printf("Would you like to send the data to FMP (y/n)? ")
 
 		var choice string
 		_, err := fmt.Scanf("%s", &choice)
