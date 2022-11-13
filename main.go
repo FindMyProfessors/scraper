@@ -30,16 +30,26 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	marshal, err := json.Marshal(*school)
-	if err != nil {
-		panic(err)
+	if ShouldWriteToFile() {
+		fileName := fmt.Sprintf("%s-%d-%s.json", school.Name, term.Year, term.Semester)
+		fmt.Printf("Writing the scraped school data to file %s\n", fileName)
+
+		marshal, err := json.Marshal(*school)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.WriteFile(fileName, marshal, 0644)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Wrote %s to %s\n", school.Name, fileName)
 	}
-	fileName := fmt.Sprintf("%d-%s.json", term.Year, term.Semester)
-	err = os.WriteFile(fileName, marshal, 0644)
-	if err != nil {
-		panic(err)
+
+	if ShouldSendToFMP() {
+
 	}
-	fmt.Printf("Wrote %s to %s\n", school.Name, fileName)
 }
 
 func GetSchoolScraper() schools.SchoolScraper {
@@ -61,7 +71,6 @@ func GetSchoolScraper() schools.SchoolScraper {
 			continue
 		}
 		return SchoolScraperMap[choice]
-
 	}
 }
 
@@ -87,5 +96,51 @@ func GetTerm(scraper schools.SchoolScraper) model.Term {
 			continue
 		}
 		return terms[choice]
+	}
+}
+
+func ShouldWriteToFile() bool {
+	for {
+		fmt.Printf("Would you like to write the data to a file? ")
+
+		var choice string
+		_, err := fmt.Scanf("%s", &choice)
+		if err != nil {
+			fmt.Printf("Unable to scan choice: %v\n", err)
+			continue
+		}
+
+		switch strings.ToLower(choice) {
+		case "y":
+			return true
+		case "n":
+			return false
+		default:
+			fmt.Printf("%s is an invalid option. Choose 'y' or 'n'.\n", choice)
+			continue
+		}
+	}
+}
+
+func ShouldSendToFMP() bool {
+	for {
+		fmt.Printf("Would you like to send the data to FMP? ")
+
+		var choice string
+		_, err := fmt.Scanf("%s", &choice)
+		if err != nil {
+			fmt.Printf("Unable to scan choice: %v\n", err)
+			continue
+		}
+
+		switch strings.ToLower(choice) {
+		case "y":
+			return true
+		case "n":
+			return false
+		default:
+			fmt.Printf("%s is an invalid option. Choose 'y' or 'n'.\n", choice)
+			continue
+		}
 	}
 }
