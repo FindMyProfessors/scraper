@@ -39,7 +39,18 @@ func (a *Api) UpsertSchool(ctx context.Context, school *model.School) error {
 
 	for _, elem := range school.Professors {
 		match, ok := professorMap[elem.FirstName+elem.LastName]
-		if !ok {
+		if ok {
+			// TODO: set rmpId via FMP API if elem.RMPId is set
+			if len(match.Reviews) > 0 {
+				newReviews, err := a.InsertNewReviews(ctx, elem, match.Reviews[0])
+				if err != nil {
+					return err
+				}
+				if newReviews > 0 {
+					fmt.Printf("%s %s has %d new reviews!\n", elem.FirstName, elem.LastName, newReviews)
+				}
+			}
+		} else {
 			professor, err := CreateProfessor(ctx, a.Client, *school.ID, NewProfessor{
 				FirstName: elem.FirstName,
 				LastName:  elem.LastName,
@@ -60,16 +71,6 @@ func (a *Api) UpsertSchool(ctx context.Context, school *model.School) error {
 				})
 				if err != nil {
 					return err
-				}
-			}
-		} else {
-			if len(match.Reviews) > 0 {
-				newReviews, err := a.InsertNewReviews(ctx, elem, match.Reviews[0])
-				if err != nil {
-					return err
-				}
-				if newReviews > 0 {
-					fmt.Printf("%s %s has %d new reviews!\n", elem.FirstName, elem.LastName, newReviews)
 				}
 			}
 		}
