@@ -14,6 +14,8 @@ bindings:
     type: github.com/FindMyProfessors/scraper/model.Tag
   Grade:
     type: github.com/FindMyProfessors/scraper/model.Grade
+  Review:
+    type: github.com/FindMyProfessors/scraper/model.Review
   RFC3339Time:
     type: string
 

@@ -17,21 +17,13 @@ type CreateProfessorResponse struct {
 // GetCreateProfessor returns CreateProfessorResponse.CreateProfessor, and is useful for accessing the field via an interface.
 func (v *CreateProfessorResponse) GetCreateProfessor() *model.Professor { return v.CreateProfessor }
 
-// CreateReviewCreateReview includes the requested fields of the GraphQL type Review.
-type CreateReviewCreateReview struct {
-	Id string `json:"id"`
-}
-
-// GetId returns CreateReviewCreateReview.Id, and is useful for accessing the field via an interface.
-func (v *CreateReviewCreateReview) GetId() string { return v.Id }
-
 // CreateReviewResponse is returned by CreateReview on success.
 type CreateReviewResponse struct {
-	CreateReview *CreateReviewCreateReview `json:"createReview"`
+	CreateReview *model.Review `json:"createReview"`
 }
 
 // GetCreateReview returns CreateReviewResponse.CreateReview, and is useful for accessing the field via an interface.
-func (v *CreateReviewResponse) GetCreateReview() *CreateReviewCreateReview { return v.CreateReview }
+func (v *CreateReviewResponse) GetCreateReview() *model.Review { return v.CreateReview }
 
 // CreateSchoolResponse is returned by CreateSchool on success.
 type CreateSchoolResponse struct {
