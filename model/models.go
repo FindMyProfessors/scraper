@@ -45,7 +45,7 @@ type School struct {
 }
 
 type Professor struct {
-	ID        string             `json:"id"`
+	ID        string             `json:"id,omitempty"`
 	FirstName string             `json:"firstname,omitempty"`
 	LastName  string             `json:"lastName,omitempty"`
 	RMPId     string             `json:"rmpId,omitempty"`
