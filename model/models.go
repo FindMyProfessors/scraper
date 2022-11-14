@@ -53,6 +53,86 @@ type Professor struct {
 	Reviews   []*Review          `json:"reviews,omitempty"`
 }
 
+func (p *Professor) UnmarshalJSON(bytes []byte) error {
+	var data map[string]any
+	if err := json.Unmarshal(bytes, &data); err != nil {
+		return err
+	}
+
+	id, ok := data["id"].(string)
+	if ok {
+		p.ID = id
+	}
+
+	rmpId, ok := data["rmpId"].(string)
+	if ok {
+		p.RMPId = rmpId
+	}
+
+	firstName, ok := data["firstName"].(string)
+	if !ok {
+		firstName, ok = data["firstname"].(string)
+	}
+	p.FirstName = firstName
+
+	lastName, ok := data["lastName"].(string)
+	if !ok {
+		lastName, ok = data["lastname"].(string)
+	}
+	p.LastName = lastName
+
+	courses, ok := data["courses"].(map[string]any)
+	if ok {
+		p.Courses = map[string]*Course{}
+		for courseCode, value := range courses {
+			courseMap := value.(map[string]any)
+			p.Courses[courseCode] = &Course{
+				Name: courseMap["name"].(string),
+				Code: courseCode,
+			}
+			fmt.Printf("courseCode = %v, courseMap = %v\n", courseCode, courseMap)
+		}
+
+	}
+
+	reviewsAnyArray, ok := data["reviews"].([]any)
+	fmt.Printf("reviewsAnyArray=%v, ok=%v\n", reviewsAnyArray, ok)
+	if ok {
+		p.Reviews = make([]*Review, len(reviewsAnyArray), len(reviewsAnyArray))
+
+		for i, reviewAny := range reviewsAnyArray {
+
+			reviewMap := reviewAny.(map[string]any)
+
+			var review Review
+			dateString := reviewMap["date"].(string)
+			t, err := time.Parse(time.RFC3339, dateString)
+			if err != nil {
+				return err
+			}
+			review.Date = t
+			review.Difficulty = reviewMap["difficulty"].(float64)
+			review.Quality = reviewMap["quality"].(float64)
+			review.Grade = Grade(reviewMap["grade"].(string))
+
+			tagAnyArray, ok := reviewMap["tags"].([]any)
+			if ok {
+				tagArray := make([]Tag, len(tagAnyArray), len(tagAnyArray))
+
+				for i, tagAny := range tagAnyArray {
+					tagArray[i] = Tag(tagAny.(string))
+				}
+				review.Tags = tagArray
+			}
+			p.Reviews[i] = &review
+		}
+	}
+
+	fmt.Printf("unmarshalled %v into Professor %v\n", data, p)
+
+	return nil
+}
+
 func (p *Professor) String() string {
 	return fmt.Sprintf("{id: %s, rmpId: %s, firstname: %s, lastname: %s, rmpId: %s, courses:%v, reviews: %v}", p.ID, p.RMPId, p.FirstName, p.LastName, p.RMPId, p.Courses, p.Reviews)
 }
@@ -235,8 +315,10 @@ func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 	var data map[string]any
 
 	if err = json.Unmarshal(bytes, &data); err != nil {
+		fmt.Printf("error is also happening here\n")
 		return err
 	}
+	fmt.Printf("data=%v\n", data)
 
 	id, ok := data["id"].(string)
 	if ok {
@@ -246,26 +328,32 @@ func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 	//fmt.Printf("data=%v\n", data)
 	f, ok := data["qualityRating"].(float64)
 	if !ok {
-		f = data["quality"].(float64)
+		qualityAny, ok := data["quality"]
+		if ok {
+			r.Quality = qualityAny.(float64)
+		}
+	} else {
+		r.Quality = f
 	}
-	r.Quality = f
 
 	f2, ok := data["difficultyRatingRounded"].(float64)
 	if !ok {
-		f2 = data["difficulty"].(float64)
+		f2, ok = data["difficulty"].(float64)
 	}
 	r.Difficulty = f2
 
-	dateString := data["date"].(string)
-	t, err := time.Parse(time.RFC3339, dateString)
-	if err != nil || t.Year() == 1 {
-		// 0001-01-01T00:00:00Z incorrectly parsed string
-		t, err = time.Parse(RMPTimeConstant, dateString)
-		if err != nil {
-			return err
+	dateString, ok := data["date"].(string)
+	if ok {
+		t, err := time.Parse(time.RFC3339, dateString)
+		if err != nil || t.Year() == 1 {
+			// 0001-01-01T00:00:00Z incorrectly parsed string
+			t, err = time.Parse(RMPTimeConstant, dateString)
+			if err != nil {
+				return err
+			}
 		}
+		r.Date = t
 	}
-	r.Date = t
 
 	tagsString, ok := data["ratingTags"].(string)
 	if ok {
@@ -286,27 +374,30 @@ func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 			r.Tags = []Tag{}
 		}
 	} else {
-		var tags []Tag
-		tagArray := data["tags"].([]any)
-		if len(tagArray) == 0 {
-			r.Tags = []Tag{}
-		} else {
-			for _, elem := range tagArray {
-				tag, err := GetTagByString(elem.(string))
-				if err != nil {
-					return err
+		tagArray, ok := data["tags"].([]any)
+		if ok {
+			if len(tagArray) == 0 {
+				r.Tags = []Tag{}
+			} else {
+				var tags []Tag
+				for _, elem := range tagArray {
+					tag, err := GetTagByString(elem.(string))
+					if err != nil {
+						return err
+					}
+					tags = append(tags, tag)
 				}
-				tags = append(tags, tag)
+				r.Tags = tags
 			}
-			r.Tags = tags
 		}
 	}
-	gradeString := data["grade"].(string)
-	grade := GetGradeByString(gradeString)
-	if !grade.IsValid() {
-		return fmt.Errorf("%s is an invalid grade", gradeString)
+	gradeString, ok := data["grade"].(string)
+	if ok {
+		grade := GetGradeByString(gradeString)
+		if !grade.IsValid() {
+			return fmt.Errorf("%s is an invalid grade", gradeString)
+		}
+		r.Grade = grade
 	}
-	r.Grade = grade
-
 	return nil
 }
