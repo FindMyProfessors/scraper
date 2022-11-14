@@ -120,6 +120,10 @@ func (a *Api) UpsertSchool(ctx context.Context, school *model.School, term *mode
 			}
 		}
 	}
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Finished uploading school to FMP\n")
 	return nil
 }
 
