@@ -195,6 +195,7 @@ func GetGradeByString(gradeString string) Grade {
 }
 
 type Review struct {
+	ID         string    `json:"id,omitempty"`
 	Quality    float64   `json:"quality"`
 	Difficulty float64   `json:"difficulty"`
 	Date       time.Time `json:"date"`
@@ -236,6 +237,12 @@ func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 	if err = json.Unmarshal(bytes, &data); err != nil {
 		return err
 	}
+
+	id, ok := data["id"].(string)
+	if ok {
+		r.ID = id
+	}
+
 	//fmt.Printf("data=%v\n", data)
 	f, ok := data["qualityRating"].(float64)
 	if !ok {
