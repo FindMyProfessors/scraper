@@ -98,15 +98,12 @@ func isSameProfessor(professor *model.Professor, rmpProfessor *model.Professor) 
 func crossReference(school *model.School, rmpProfessors []*model.Professor) {
 	var wg sync.WaitGroup
 	wg.Add(len(rmpProfessors))
-	mu := &sync.Mutex{}
 	for _, rmpProfessor := range rmpProfessors {
 		go func(rmpProfessor *model.Professor) {
 			for _, professor := range school.Professors {
 				if isSameProfessor(professor, rmpProfessor) {
-					mu.Lock()
 					professor.Reviews = rmpProfessor.Reviews
-					//school.Professors[i] = professor
-					mu.Unlock()
+					professor.RMPId = rmpProfessor.RMPId
 					log.Printf("found match for %s %s\n", professor.FirstName, professor.LastName)
 					break
 				}
