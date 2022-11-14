@@ -1,0 +1,66 @@
+query GetSchools {
+    schools(first: 50) {
+        schools {
+            id
+            name
+        }
+        totalCount
+    }
+}
+
+query GetProfessorByRMPId($rmpId: String!, $includeSchool: Boolean!) {
+    professorByRMPId(rmpId: $rmpId) {
+        id
+        firstName
+        lastName
+        linked
+        school @include(if: $includeSchool) {
+            id
+            name
+        }
+    }
+}
+
+query GetProfessors($schoolId: ID!, $after: String) {
+    professors(schoolId: $schoolId, first: 50, after: $after) {
+        professors {
+            id
+            firstName
+            lastName
+            reviews(first: 1) {
+                reviews {
+                    id
+                }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                }
+            }
+        }
+        pageInfo {
+            hasNextPage
+            endCursor
+        }
+        totalCount
+
+    }
+
+}
+
+mutation CreateProfessor($schoolId: ID!, $input: NewProfessor!) {
+    createProfessor(schoolId: $schoolId, input: $input) {
+        id
+    }
+}
+
+mutation CreateSchool($input: NewSchool!) {
+    createSchool( input: $input) {
+        id
+    }
+}
+
+mutation CreateReview($professorId: ID!, $input: NewReview!) {
+    createReview(professorId: $professorId, input: $input) {
+        id
+    }
+}

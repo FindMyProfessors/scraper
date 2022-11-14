@@ -1,0 +1,2526 @@
+"""
+
+"""
+type SchoolSummary {
+  """
+
+  """
+  campusCondition: Float
+
+  """
+
+  """
+  campusLocation: Float
+
+  """
+
+  """
+  careerOpportunities: Float
+
+  """
+
+  """
+  clubAndEventActivities: Float
+
+  """
+
+  """
+  foodQuality: Float
+
+  """
+
+  """
+  internetSpeed: Float
+
+  """
+
+  """
+  libraryCondition: Float
+
+  """
+
+  """
+  schoolReputation: Float
+
+  """
+
+  """
+  schoolSafety: Float
+
+  """
+
+  """
+  schoolSatisfaction: Float
+
+  """
+
+  """
+  socialActivities: Float
+}
+
+"""
+
+"""
+type schoolConnectionTypeConnection {
+  """
+
+  """
+  edges: [schoolConnectionTypeEdges]
+
+  """
+
+  """
+  pageInfo: schoolConnectionTypePageInfo
+}
+
+"""
+
+"""
+type TagCreateMutationResponse {
+  """
+
+  """
+  tag: Tags
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+A float rounded to 1 decimal place.
+"""
+scalar RoundedFloat
+
+"""
+
+"""
+type CampusRatingThumb implements Node {
+  """
+
+  """
+  campusRating: SchoolRating
+
+  """
+
+  """
+  campusRatingId: Int
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  thumbsDown: Int
+
+  """
+
+  """
+  thumbsUp: Int
+
+  """
+
+  """
+  userId: Int
+}
+
+"""
+
+"""
+type Rating implements Node {
+  """
+
+  """
+  adminReviewedAt: String
+
+  """
+
+  """
+  attendanceMandatory: String
+
+  """
+
+  """
+  clarityRating: Float @deprecated(reason: "Replaced by clarityRatingRounded")
+
+  """
+
+  """
+  clarityRatingRounded: RoundedFloat
+
+  """
+
+  """
+  class: String
+
+  """
+
+  """
+  comment: Latin1String
+
+  """
+
+  """
+  courseType: Int
+
+  """
+
+  """
+  createdByUser: Boolean
+
+  """
+
+  """
+  date: String
+
+  """
+
+  """
+  difficultyRating: Float
+    @deprecated(reason: "Replaced by difficultyRatingRounded")
+
+  """
+
+  """
+  difficultyRatingRounded: RoundedFloat
+
+  """
+
+  """
+  flagStatus: String
+
+  """
+
+  """
+  grade: String
+
+  """
+
+  """
+  helpfulRating: Float @deprecated(reason: "Replaced by helpfulRatingRounded")
+
+  """
+
+  """
+  helpfulRatingRounded: RoundedFloat
+
+  """
+
+  """
+  iWouldTakeAgain: Boolean
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  isForCredit: Boolean
+
+  """
+
+  """
+  isForOnlineClass: Boolean
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  maskCount: Int
+
+  """
+  An average of helpfulRating and clarityRating
+  """
+  qualityRating: Int
+
+  """
+
+  """
+  ratingTags: String
+
+  """
+
+  """
+  teacher: Teacher
+
+  """
+
+  """
+  teacherNote: TeacherNotes
+
+  """
+
+  """
+  textbookIsUsed: Boolean
+
+  """
+
+  """
+  textbookUse: Int @deprecated(reason: "Replaced by textbookIsUsed")
+
+  """
+
+  """
+  thumbs: [Thumb] @deprecated(reason: "Replaced by userThumbs")
+
+  """
+
+  """
+  thumbsDownTotal: Int
+
+  """
+
+  """
+  thumbsUpTotal: Int
+
+  """
+
+  """
+  userThumbs: [Thumb]
+
+  """
+
+  """
+  wouldTakeAgain: Int @deprecated(reason: "Replaced by iWouldTakeAgain")
+}
+
+"""
+
+"""
+type Thumb implements Node {
+  """
+
+  """
+  Rating: Rating
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  ratingId: Int
+
+  """
+
+  """
+  thumbsDown: Int
+
+  """
+
+  """
+  thumbsUp: Int
+
+  """
+
+  """
+  userId: Int
+}
+
+"""
+A connection to a list of items.
+"""
+type TeacherSearchConnectionConnection {
+  """
+
+  """
+  didFallback: Boolean
+
+  """
+  Information to aid in pagination.
+  """
+  edges: [TeacherSearchConnectionEdge]
+
+  """
+
+  """
+  filters: [Filter]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+
+  """
+
+  """
+  resultCount: Int
+}
+
+"""
+
+"""
+type Mutation {
+  """
+
+  """
+  addSchoolRating(
+    compID: String!
+    location: Int!
+    opportunities: Int!
+    happiness: Int!
+    internet: Int!
+    reputation: Int!
+    facilities: Int!
+    clubs: Int!
+    social: Int!
+    schoolID: ID!
+    food: Int!
+    safety: Int!
+    comment: UserComment!
+    recaptcha: String!
+  ): AddSchoolRatingMutationResponse
+
+  """
+
+  """
+  addTeacher(
+    schoolName: String!
+    schoolID: ID!
+    firstName: String!
+    lastName: String!
+    middleName: String
+    department: String!
+    directoryUrl: String
+    recaptcha: String!
+  ): teacherMutationResponse
+
+  """
+
+  """
+  confirmEmail(token: String!): UserMutationResponse
+
+  """
+
+  """
+  createCampusRatingThumb(
+    thumbsDown: Boolean!
+    userId: ID!
+    schoolId: ID!
+    ratingId: ID!
+    thumbsUp: Boolean!
+  ): CampusRatingThumb
+
+  """
+
+  """
+  createProfessor(professor: ProfessorInputObject): UserMutationResponse
+
+  """
+
+  """
+  createThumb(
+    userId: Int
+    tid: Int
+    rid: Int
+    thumbsUp: Int
+    thumbsDown: Int
+  ): Thumb
+
+  """
+
+  """
+  editSchoolRating(
+    comment: UserComment!
+    ID: ID!
+    schoolID: ID!
+    location: Int!
+    internet: Int!
+    clubs: Int!
+    social: Int!
+    reputation: Int!
+    opportunities: Int!
+    facilities: Int!
+    food: Int!
+    happiness: Int!
+    safety: Int!
+  ): EditSchoolRatingMutationResponse
+
+  """
+
+  """
+  editTeacher(
+    department: String!
+    directoryUrl: String
+    ID: ID!
+    schoolName: String!
+    schoolID: ID!
+    firstName: String!
+    lastName: String!
+    middleName: String
+  ): teacherMutationResponse
+
+  """
+  Edit a teacher rating
+  """
+  editTeacherRating(
+    """
+
+    """
+    wouldTakeAgain: Boolean!
+
+    """
+
+    """
+    usesTextbooks: Boolean
+
+    """
+
+    """
+    attendanceMandatory: Boolean
+
+    """
+
+    """
+    grade: String
+
+    """
+
+    """
+    ID: ID!
+
+    """
+
+    """
+    teacherID: ID!
+
+    """
+    1-5 Difficulty Rating
+    """
+    difficulty: Int!
+
+    """
+
+    """
+    online: Boolean
+
+    """
+
+    """
+    tags: [ID]
+
+    """
+
+    """
+    comment: UserComment!
+
+    """
+    An alphanumeric class code
+    """
+    class: String!
+
+    """
+    1-5 Overall Rating
+    """
+    rating: Int!
+
+    """
+
+    """
+    forCredit: Boolean
+  ): AddTeacherRatingMutationResponse
+
+  """
+
+  """
+  emailValidation(email: String!, recaptcha: String!): ValidationResponse
+
+  """
+  Flag a campus rating
+  """
+  flagCampusRating(
+    ratingID: ID!
+    flagComment: UserComment!
+  ): flagCampusRatingMutationResponse
+
+  """
+  Flag a professor rating
+  """
+  flagProfessorRating(
+    ratingID: ID!
+    flagComment: UserComment!
+  ): flagProfessorRatingMutationResponse
+
+  """
+  Lock or soft-lock a list of teachers, requires an admin account
+  """
+  lockTeachers(
+    """
+    Expiry of lock as unix timestamp incl. millis
+    """
+    expiry: String!
+
+    """
+    Should the teachers be hard-locked
+    """
+    hard: Boolean = false
+
+    """
+    An array of teacher IDs
+    """
+    teacherIDs: [ID]!
+  ): ValidationResponse
+
+  """
+
+  """
+  maskRatings(date: String): Rating
+
+  """
+  Add a teacher rating
+  """
+  rateTeacher(
+    """
+    1-5 Difficulty Rating
+    """
+    difficulty: Int!
+
+    """
+
+    """
+    online: Boolean
+
+    """
+
+    """
+    grade: String
+
+    """
+
+    """
+    recaptcha: String!
+
+    """
+
+    """
+    compID: String!
+
+    """
+
+    """
+    teacherID: ID!
+
+    """
+
+    """
+    usesTextbooks: Boolean
+
+    """
+
+    """
+    wouldTakeAgain: Boolean!
+
+    """
+
+    """
+    attendanceMandatory: Boolean
+
+    """
+
+    """
+    tags: [ID]
+
+    """
+
+    """
+    comment: UserComment!
+
+    """
+    An alphanumeric class code
+    """
+    class: String!
+
+    """
+    1-5 Overall Rating
+    """
+    rating: Int!
+
+    """
+
+    """
+    forCredit: Boolean
+  ): AddTeacherRatingMutationResponse
+
+  """
+
+  """
+  resendEmailConfirmation: ValidationResponse
+
+  """
+
+  """
+  resetPassword(
+    password: String!
+    confirmPassword: String!
+    recaptcha: String!
+    token: String!
+  ): ValidationResponse
+
+  """
+
+  """
+  resetPasswordRequest(email: String!): ValidationResponse
+
+  """
+
+  """
+  schoolCreate(
+    nickname: String
+    city: String!
+    state: String!
+    country: String!
+    website: String!
+    email: String!
+    recaptcha: String!
+    name: String!
+  ): ValidationResponse
+
+  """
+  Submit a campus correction
+  """
+  submitCampusCorrection(
+    recaptcha: String!
+    campusId: ID!
+    radioVal: Int!
+    comment: String!
+    email: String!
+  ): ValidationResponse
+
+  """
+  Submit a professor correction
+  """
+  submitProfessorCorrection(
+    tid: ID!
+    radioVal: Int!
+    comment: String!
+    email: String!
+    recaptcha: String!
+  ): ValidationResponse
+
+  """
+
+  """
+  tagCreate(tag: tagInput): TagCreateMutationResponse
+
+  """
+
+  """
+  teacherEmailAlert(enable: Boolean!): teacherMutationResponse
+
+  """
+
+  """
+  teacherNoteCreate(teacherNote: teacherNotesInput): TeacherNoteCreateResponse
+
+  """
+
+  """
+  userCreate(user: UserInputObject): UserMutationResponse
+
+  """
+
+  """
+  userDelete(password: String!): UserMutationResponse
+
+  """
+
+  """
+  userEmailFromResetToken(token: String!): ResetFindEmailResponse
+
+  """
+
+  """
+  userLogin(email: String!, password: String!): AuthenticationResponse
+
+  """
+
+  """
+  userToggleSavedProfessor(id: ID): UserToggleSavedProfessorMutationResponse
+
+  """
+
+  """
+  userUpdate(user: UserInputObject): UserMutationResponse
+
+  """
+
+  """
+  userUpdateEmail(email: String, password: String): UserMutationResponse
+
+  """
+
+  """
+  userUpdatePassword(
+    oldPassword: String
+    password: String
+  ): UserMutationResponse
+}
+
+"""
+
+"""
+type TeacherNoteCreateResponse {
+  """
+
+  """
+  errors: String @deprecated(reason: "use validation field")
+
+  """
+
+  """
+  teacherNote: TeacherNotes
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+A connection to a list of items.
+"""
+type RatingConnection {
+  """
+  Information to aid in pagination.
+  """
+  edges: [RatingEdge]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+
+"""
+type ratingConnectionTypeConnection {
+  """
+
+  """
+  edges: [ratingConnectionTypeEdges]
+
+  """
+
+  """
+  pageInfo: ratingConnectionTypePageInfo
+}
+
+"""
+
+"""
+input DeptInputObject {
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  name: String
+}
+
+"""
+
+"""
+type Department {
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  name: String
+}
+
+"""
+
+"""
+scalar Latin1String
+
+"""
+
+"""
+type ratingsDistribution {
+  """
+
+  """
+  r1: Int
+
+  """
+
+  """
+  r2: Int
+
+  """
+
+  """
+  r3: Int
+
+  """
+
+  """
+  r4: Int
+
+  """
+
+  """
+  r5: Int
+
+  """
+
+  """
+  total: Int
+}
+
+"""
+
+"""
+type campusRatingConnectionTypePageInfo {
+  """
+
+  """
+  endCursor: String
+
+  """
+
+  """
+  hasNextPage: Boolean
+
+  """
+
+  """
+  hasPreviousPage: Boolean
+
+  """
+
+  """
+  startCursor: String
+}
+
+"""
+An edge in a connection
+"""
+type TeacherSearchConnectionEdge {
+  """
+   cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: Teacher
+}
+
+"""
+
+"""
+type notesConnectionTypePageInfo {
+  """
+
+  """
+  endCursor: String
+
+  """
+
+  """
+  hasNextPage: Boolean
+
+  """
+
+  """
+  hasPreviousPage: Boolean
+
+  """
+
+  """
+  startCursor: String
+}
+
+"""
+
+"""
+type teacherConnectionTypePageInfo {
+  """
+
+  """
+  endCursor: String
+
+  """
+
+  """
+  hasNextPage: Boolean
+
+  """
+
+  """
+  hasPreviousPage: Boolean
+
+  """
+
+  """
+  startCursor: String
+}
+
+"""
+
+"""
+type campusRatingConnectionTypeConnection {
+  """
+
+  """
+  edges: [campusRatingConnectionTypeEdges]
+
+  """
+
+  """
+  pageInfo: campusRatingConnectionTypePageInfo
+}
+
+"""
+
+"""
+input SchoolSearchQuery {
+  """
+
+  """
+  text: String
+}
+
+"""
+
+"""
+type UserMutationResponse {
+  """
+
+  """
+  user: User
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type EditSchoolRatingMutationResponse {
+  """
+
+  """
+  rating: SchoolRating
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type Query {
+  """
+  Get Search Results
+  """
+  autocomplete(query: String): Search
+
+  """
+  Get New Search Results
+  """
+  newSearch: newSearch
+
+  """
+  Get Node by ID
+  """
+  node(id: ID): Node
+
+  """
+  Obtain a redirect URL to login with an oauth provider
+  """
+  oauthURL(
+    """
+    valid providers: google
+    """
+    provider: String!
+  ): String
+
+  """
+  Get Search Results
+  """
+  search(query: String): Search
+
+  """
+  Get professors who are being spammed or harassed, this is determined by the number of removed ratings within a timeframe
+  """
+  spammedTeachers(
+    """
+    The minimum number of removed ratings
+    """
+    minRemoved: Int!
+
+    """
+    Unix timestamp incl. millis
+    """
+    startTime: String!
+
+    """
+    Unix timestamp incl. millis
+    """
+    endTime: String!
+  ): spammedTeachers
+
+  """
+  Active teacher tags available for use in ratings
+  """
+  teacherTags: [Tags]
+
+  """
+  Get current User
+  """
+  user: User
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
+
+  """
+  When paginating forwards, are there more items?
+  """
+  hasNextPage: Boolean!
+
+  """
+  When paginating backwards, are there more items?
+  """
+  hasPreviousPage: Boolean!
+
+  """
+  When paginating backwards, the cursor to continue.
+  """
+  startCursor: String
+}
+
+"""
+An edge in a connection
+"""
+type CampusRatingEdge {
+  """
+   cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: SchoolRating
+}
+
+"""
+
+"""
+type teacherConnectionTypeEdges {
+  """
+
+  """
+  cursor: String
+
+  """
+
+  """
+  node: Teacher
+}
+
+"""
+
+"""
+type newSearch {
+  """
+  Get Filtered/Sorted School Search Results
+  """
+  schools(
+    first: Int
+    query: SchoolSearchQuery
+    last: Int
+    before: String
+    after: String
+  ): SchoolSearchConnectionConnection
+
+  """
+  Get Filtered/Sorted Teacher Search Results
+  """
+  teachers(
+    query: TeacherSearchQuery
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): TeacherSearchConnectionConnection
+}
+
+"""
+
+"""
+type UserToggleSavedProfessorMutationResponse {
+  """
+
+  """
+  teacher: Teacher
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type flagProfessorRatingMutationResponse {
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type Teacher implements Node {
+  """
+
+  """
+  avgDifficulty: Float
+
+  """
+
+  """
+  avgDifficultyRounded: RoundedFloat
+
+  """
+
+  """
+  avgRating: Float @deprecated(reason: "Replaced by avgRatingRounded")
+
+  """
+
+  """
+  avgRatingRounded: RoundedFloat
+
+  """
+
+  """
+  courseCodes: [Course]
+
+  """
+
+  """
+  department: String
+
+  """
+
+  """
+  emailAlerts: Boolean
+
+  """
+
+  """
+  firstName: String
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  isProfCurrentUser: Boolean
+
+  """
+
+  """
+  isSaved: Boolean
+
+  """
+
+  """
+  lastName: String
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  lockStatus: String
+
+  """
+
+  """
+  mostUsefulRating: Rating
+
+  """
+
+  """
+  notes(
+    before: String
+    after: String
+    first: Int
+  ): notesConnectionTypeConnection
+
+  """
+
+  """
+  numNotes: Int
+
+  """
+
+  """
+  numRatings: Int
+
+  """
+
+  """
+  ratings(
+    """
+
+    """
+    first: Int
+
+    """
+
+    """
+    last: Int
+
+    """
+
+    """
+    courseFilter: String
+
+    """
+
+    """
+    ratingScores: [Int]
+
+    """
+    Sorting filter valid values: date, quality, difficulty
+    """
+    sortBy: String = "date"
+
+    """
+
+    """
+    before: String
+
+    """
+
+    """
+    after: String
+  ): RatingConnection
+
+  """
+
+  """
+  ratingsDistribution: ratingsDistribution
+
+  """
+
+  """
+  relatedFullTeachers(
+    after: String
+    first: Int
+    last: Int
+    before: String
+  ): TeacherConnection
+
+  """
+
+  """
+  relatedTeachers: [RelatedTeacher]
+    @deprecated(reason: "Replaced by relatedFullTeachers\n")
+
+  """
+
+  """
+  school: School
+
+  """
+
+  """
+  teacherRatingTags: [TeacherRatingTags]
+
+  """
+
+  """
+  wouldTakeAgainCount: Float
+
+  """
+
+  """
+  wouldTakeAgainPercent: Float
+    @deprecated(reason: "Replaced by wouldTakeAgainPercentRounded")
+
+  """
+
+  """
+  wouldTakeAgainPercentRounded: RoundedFloat
+}
+
+"""
+An edge in a connection
+"""
+type TeacherEdge {
+  """
+   cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: Teacher
+}
+
+"""
+
+"""
+type schoolConnectionTypePageInfo {
+  """
+
+  """
+  endCursor: String
+
+  """
+
+  """
+  hasNextPage: Boolean
+
+  """
+
+  """
+  hasPreviousPage: Boolean
+
+  """
+
+  """
+  startCursor: String
+}
+
+"""
+
+"""
+type ValidationResponse {
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+Create a tag
+"""
+input tagInput {
+  """
+
+  """
+  name: String!
+
+  """
+
+  """
+  active: Boolean
+
+  """
+
+  """
+  id: ID
+}
+
+"""
+
+"""
+type RelatedTeacher implements Node {
+  """
+
+  """
+  avgRating: Float @deprecated(reason: "Replaced by avgRatingRounded")
+
+  """
+
+  """
+  avgRatingRounded: RoundedFloat
+
+  """
+
+  """
+  firstName: String
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  lastName: String
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  school: School
+}
+
+"""
+
+"""
+type ratingConnectionTypeEdges {
+  """
+
+  """
+  cursor: String
+
+  """
+
+  """
+  node: Rating
+}
+
+"""
+
+"""
+type AuthenticationResponse {
+  """
+
+  """
+  token: String
+
+  """
+
+  """
+  user: User
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type teacherMutationResponse {
+  """
+
+  """
+  teacher: Teacher
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type AddTeacherRatingMutationResponse {
+  """
+
+  """
+  rating: Rating
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+input ProfessorInputObject {
+  """
+
+  """
+  teacherId: ID
+
+  """
+
+  """
+  firstName: String!
+
+  """
+
+  """
+  lastName: String!
+
+  """
+
+  """
+  email: String!
+
+  """
+
+  """
+  password: String
+}
+
+"""
+
+"""
+type notesConnectionTypeEdges {
+  """
+
+  """
+  cursor: String
+
+  """
+
+  """
+  node: TeacherNotes
+}
+
+"""
+
+"""
+type Tags implements Node {
+  """
+
+  """
+  active: Boolean
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  name: String
+}
+
+"""
+
+"""
+input PaginateObject {
+  """
+
+  """
+  after: String
+
+  """
+
+  """
+  first: Int
+
+  """
+
+  """
+  before: String
+}
+
+"""
+A connection to a list of items.
+"""
+type TeacherConnection {
+  """
+  Information to aid in pagination.
+  """
+  edges: [TeacherEdge]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+
+"""
+type ValidationResult implements Node {
+  """
+
+  """
+  errors: [FieldErrorType]
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  success: Boolean
+}
+
+"""
+
+"""
+type schoolConnectionTypeEdges {
+  """
+
+  """
+  cursor: String
+
+  """
+
+  """
+  node: School
+}
+
+"""
+
+"""
+type ResetFindEmailResponse {
+  """
+
+  """
+  email: String
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type notesConnectionTypeConnection {
+  """
+
+  """
+  edges: [notesConnectionTypeEdges]
+
+  """
+
+  """
+  pageInfo: notesConnectionTypePageInfo
+}
+
+"""
+
+"""
+type TeacherNotes implements Node {
+  """
+
+  """
+  class: String
+
+  """
+
+  """
+  comment: UserComment
+
+  """
+
+  """
+  createDate: String
+
+  """
+
+  """
+  createdAt: String
+
+  """
+
+  """
+  flagStatus: String
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  ratingId: Int
+
+  """
+
+  """
+  teacherId: ID
+
+  """
+
+  """
+  updateDate: String
+
+  """
+
+  """
+  updatedAt: String
+}
+
+"""
+
+"""
+type AddSchoolRatingMutationResponse {
+  """
+
+  """
+  rating: SchoolRating
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type flagCampusRatingMutationResponse {
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+A connection to a list of items.
+"""
+type CampusRatingConnection {
+  """
+  Information to aid in pagination.
+  """
+  edges: [CampusRatingEdge]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+
+"""
+type FieldErrorType {
+  """
+
+  """
+  field: String
+
+  """
+
+  """
+  messages: [String]
+}
+
+"""
+
+"""
+type teacherConnectionTypeConnection {
+  """
+
+  """
+  edges: [teacherConnectionTypeEdges]
+
+  """
+
+  """
+  pageInfo: teacherConnectionTypePageInfo
+}
+
+"""
+
+"""
+type campusRatingConnectionTypeEdges {
+  """
+
+  """
+  cursor: String
+
+  """
+
+  """
+  node: SchoolRating
+}
+
+"""
+
+"""
+type ratingConnectionTypePageInfo {
+  """
+
+  """
+  endCursor: String
+
+  """
+
+  """
+  hasNextPage: Boolean
+
+  """
+
+  """
+  hasPreviousPage: Boolean
+
+  """
+
+  """
+  startCursor: String
+}
+
+"""
+
+"""
+type UserTags {
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  name: String
+}
+
+"""
+
+"""
+type FilterOption {
+  """
+
+  """
+  count: Int
+
+  """
+
+  """
+  id: String
+
+  """
+
+  """
+  value: String
+}
+
+"""
+
+"""
+type School implements Node {
+  """
+
+  """
+  avgRating: Float @deprecated(reason: "Replaced by avgRatingRounded")
+
+  """
+
+  """
+  avgRatingRounded: RoundedFloat
+
+  """
+
+  """
+  city: String
+
+  """
+
+  """
+  departments: [Department]
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  name: String
+
+  """
+
+  """
+  numRatings: Int
+
+  """
+
+  """
+  ratings(
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): CampusRatingConnection
+
+  """
+
+  """
+  state: String
+
+  """
+
+  """
+  summary: SchoolSummary
+}
+
+"""
+An edge in a connection
+"""
+type RatingEdge {
+  """
+   cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: Rating
+}
+
+"""
+The `UserComment` scalar type represents sanitized user input filtered for profanity and code input.
+"""
+scalar UserComment
+
+"""
+
+"""
+type TeacherRatingTags implements Node {
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  tagCount: Int
+
+  """
+
+  """
+  tagName: String
+}
+
+"""
+A connection to a list of items.
+"""
+type SchoolSearchConnectionConnection {
+  """
+  Information to aid in pagination.
+  """
+  edges: [SchoolSearchConnectionEdge]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+
+  """
+
+  """
+  resultCount: Int
+}
+
+"""
+
+"""
+input TeacherSearchQuery {
+  """
+  Sort filter acceptable values: 'mostRated', 'highestRated', 'leastDifficult', 'alphabetical'
+  """
+  sort: String
+
+  """
+  If true, the search will fallback to not filtering by school.
+  """
+  fallback: Boolean = false
+
+  """
+  Teacher string name, omit or leave empty to not filter by teacher name.
+  """
+  text: String
+
+  """
+  School Base64 ID, omit or leave empty to not filter by school.
+  """
+  schoolID: ID
+
+  """
+  Department Base64 ID, omit or leave empty to not filter by department.
+  """
+  departmentID: [ID]
+}
+
+"""
+
+"""
+type Filter {
+  """
+
+  """
+  field: String
+
+  """
+
+  """
+  options: [FilterOption]
+}
+
+"""
+
+"""
+input UserInputObject {
+  """
+
+  """
+  email: String!
+
+  """
+
+  """
+  password: String
+
+  """
+
+  """
+  graduationYear: Int
+
+  """
+
+  """
+  currentStanding: String
+
+  """
+
+  """
+  schoolId: ID
+
+  """
+
+  """
+  departments: [DeptInputObject]
+
+  """
+
+  """
+  firstName: String
+
+  """
+
+  """
+  lastName: String
+}
+
+"""
+
+"""
+interface Node {
+  """
+
+  """
+  id: ID
+}
+
+"""
+
+"""
+type SchoolRating implements Node {
+  """
+
+  """
+  clubsRating: Int
+
+  """
+
+  """
+  comment: UserComment
+
+  """
+
+  """
+  createdByUser: Boolean
+
+  """
+
+  """
+  date: String
+
+  """
+
+  """
+  facilitiesRating: String
+
+  """
+
+  """
+  flagStatus: String
+
+  """
+
+  """
+  foodRating: Int
+
+  """
+
+  """
+  happinessRating: Int
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  internetRating: Int
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  locationRating: Int
+
+  """
+
+  """
+  opportunitiesRating: Int
+
+  """
+
+  """
+  reputationRating: Int
+
+  """
+
+  """
+  safetyRating: Int
+
+  """
+
+  """
+  school: School
+
+  """
+
+  """
+  socialRating: Int
+
+  """
+
+  """
+  thumbsDownTotal: Int
+
+  """
+
+  """
+  thumbsUpTotal: Int
+
+  """
+
+  """
+  userThumbs: [CampusRatingThumb]
+}
+
+"""
+
+"""
+type Course {
+  """
+
+  """
+  courseCount: Int
+
+  """
+
+  """
+  courseName: String
+
+  """
+
+  """
+  teacherId: Int
+}
+
+"""
+Create a teacher note
+"""
+input teacherNotesInput {
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  ratingId: ID!
+
+  """
+
+  """
+  teacherId: ID!
+
+  """
+
+  """
+  class: String
+
+  """
+
+  """
+  comment: String
+}
+
+"""
+
+"""
+type spammedTeachers {
+  """
+
+  """
+  teachers: [Teacher]
+
+  """
+
+  """
+  validation: ValidationResult
+}
+
+"""
+
+"""
+type Search {
+  """
+
+  """
+  schools(paginate: PaginateObject): schoolConnectionTypeConnection
+    @deprecated(
+      reason: "Use new search methods for corrected pagination and filtering"
+    )
+
+  """
+
+  """
+  teachers(paginate: PaginateObject): teacherConnectionTypeConnection
+    @deprecated(
+      reason: "Use new search methods for corrected pagination and filtering"
+    )
+}
+
+"""
+
+"""
+type User implements Node {
+  """
+
+  """
+  Email: String @deprecated(reason: "Replaced by email\n")
+
+  """
+
+  """
+  Type: String
+
+  """
+
+  """
+  campusRatings(
+    first: Int
+    before: String
+    after: String
+  ): campusRatingConnectionTypeConnection
+
+  """
+
+  """
+  campusRatingsCount: Int
+
+  """
+
+  """
+  currentStanding: String
+
+  """
+
+  """
+  departments: [Department]
+
+  """
+
+  """
+  email: String
+
+  """
+
+  """
+  emailConfirmed: Boolean
+
+  """
+
+  """
+  firstName: String
+
+  """
+
+  """
+  graduationYear: Int
+
+  """
+
+  """
+  id: ID
+
+  """
+
+  """
+  lastName: String
+
+  """
+
+  """
+  legacyId: Int
+
+  """
+
+  """
+  oauth: Boolean
+
+  """
+
+  """
+  ratings(
+    first: Int
+    before: String
+    after: String
+  ): ratingConnectionTypeConnection
+
+  """
+
+  """
+  ratingsCount: Int
+
+  """
+
+  """
+  savedProfessors(
+    before: String
+    after: String
+    first: Int
+    last: Int
+  ): TeacherConnection
+
+  """
+
+  """
+  savedProfessorsCount: Int
+
+  """
+
+  """
+  school: School
+
+  """
+
+  """
+  tags: [UserTags]
+
+  """
+
+  """
+  teacher: Teacher
+
+  """
+
+  """
+  teachers(
+    first: Int
+    before: String
+    after: String
+  ): teacherConnectionTypeConnection
+    @deprecated(reason: "Replaced by savedProfessors\n")
+}
+
+"""
+An edge in a connection
+"""
+type SchoolSearchConnectionEdge {
+  """
+   cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: School
+}

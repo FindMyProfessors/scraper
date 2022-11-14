@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/FindMyProfessors/scraper/fmp"
 	"github.com/FindMyProfessors/scraper/model"
 	"github.com/FindMyProfessors/scraper/schools"
 	"github.com/FindMyProfessors/scraper/schools/ucf"
@@ -10,6 +13,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -21,6 +25,27 @@ var (
 func main() {
 	fmt.Println("Welcome to the FindMyProfessor's Scraper")
 
+	if ShouldUseFile() {
+		school, err := GetSchoolFromFile()
+		if err != nil {
+			panic(err)
+		}
+
+		for _, scraper := range SchoolScraperMap {
+			if scraper.Name() == school.Name {
+				if ShouldSendToFMP() {
+					api := fmp.NewApi("http://localhost:8080/query")
+					err = api.UpsertSchool(context.Background(), school)
+					if err != nil {
+						panic(err)
+					}
+				}
+				return
+			}
+		}
+		return
+	}
+
 	scraper := GetSchoolScraper()
 
 	fmt.Printf("Starting scraping of %s now\n", scraper.Name())
@@ -30,6 +55,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	if ShouldWriteToFile() {
 		fileName := fmt.Sprintf("%s-%d-%s.json", school.Name, term.Year, term.Semester)
 		fmt.Printf("Writing the scraped school data to file %s\n", fileName)
@@ -48,7 +74,11 @@ func main() {
 	}
 
 	if ShouldSendToFMP() {
-
+		api := fmp.NewApi("http://localhost:8080/query")
+		err = api.UpsertSchool(context.Background(), school)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -143,4 +173,66 @@ func ShouldSendToFMP() bool {
 			continue
 		}
 	}
+}
+
+func ShouldUseFile() bool {
+	for {
+		fmt.Printf("Would you like to use a previous scrape file (y/n)? ")
+		var choice string
+		_, err := fmt.Scanf("%s", &choice)
+		if err != nil {
+			fmt.Printf("Unable to scan choice: %v\n", err)
+			continue
+		}
+
+		switch strings.ToLower(choice) {
+		case "y":
+			return true
+		case "n":
+			return false
+		default:
+			fmt.Printf("%s is an invalid option. Choose 'y' or 'n'.\n", choice)
+			continue
+		}
+	}
+}
+
+func GetSchoolFromFile() (*model.School, error) {
+	var school model.School
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Printf("Enter file path: ")
+		var path string
+		path, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Printf("Unable to scan choice: %v\n", err)
+			continue
+		}
+
+		pwd, _ := os.Getwd()
+		path, err = filepath.Abs(filepath.Join(pwd, path))
+		if err != nil {
+			fmt.Printf("Unable to get the absolute path: %v\n", err)
+			continue
+		}
+
+		path = strings.TrimSuffix(path, "\n")
+
+		fmt.Printf("path=%s\n", path)
+
+		//path = strings.ReplaceAll(path, " ", "\\ ")
+		jsonFile, err := os.ReadFile(path)
+		if err != nil {
+			fmt.Printf("Unable read json: %v\n", err)
+			continue
+		}
+
+		err = json.Unmarshal(jsonFile, &school)
+		if err != nil {
+			fmt.Printf("Unable unmarshall json: %v\n", err)
+			continue
+		}
+		break
+	}
+	return &school, nil
 }

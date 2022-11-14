@@ -1,6 +1,7 @@
 package ucf
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/FindMyProfessors/scraper/model"
@@ -63,7 +64,8 @@ func (u *Scraper) Scrape() (*model.School, error) {
 		Courses:    courseArray,
 	}
 
-	err := rmp.StartScrape(school, UCF_RMP_IDS...)
+	api := rmp.NewApi("dGVzdDp0ZXN0")
+	err := api.StartScrape(context.Background(), school, UCF_RMP_IDS...)
 	if err != nil {
 		return nil, err
 	}

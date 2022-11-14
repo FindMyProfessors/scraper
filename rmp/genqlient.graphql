@@ -1,0 +1,32 @@
+query NewSearch($schoolId: ID, $first: Int!, $cursor: String!) {
+    newSearch {
+        teachers(
+            query: { text: "", schoolID: $schoolId }
+            first: $first
+            after: $cursor
+        ) {
+            edges {
+                node {
+                    id
+                    firstName
+                    lastName
+                    ratings(first: 500) {
+                        edges {
+                            node {
+                                qualityRating
+                                difficultyRatingRounded
+                                date
+                                ratingTags
+                                grade
+                            }
+                        }
+                    }
+                }
+            }
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+        }
+    }
+}

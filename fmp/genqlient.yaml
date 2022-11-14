@@ -1,0 +1,20 @@
+# Default genqlient config; for full documentation see:
+# https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
+schema: schema.graphql
+operations:
+  - genqlient.graphql
+generated: generated.go
+
+bindings:
+  School:
+    type: github.com/FindMyProfessors/scraper/model.School
+  Professor:
+    type: github.com/FindMyProfessors/scraper/model.Professor
+  Tag:
+    type: github.com/FindMyProfessors/scraper/model.Tag
+  Grade:
+    type: github.com/FindMyProfessors/scraper/model.Grade
+  RFC3339Time:
+    type: string
+
+optional: pointer

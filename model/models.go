@@ -53,9 +53,17 @@ type Professor struct {
 	Reviews   []*Review          `json:"reviews,omitempty"`
 }
 
+func (p *Professor) String() string {
+	return fmt.Sprintf("{id: %s, firstname: %s, lastname: %s, rmpId: %s, courses:%v, reviews: %v}", p.ID, p.FirstName, p.LastName, p.RMPId, p.Courses, p.Reviews)
+}
+
 type Course struct {
 	Name string `json:"name,omitempty"`
 	Code string `json:"code,omitempty"`
+}
+
+func (c *Course) String() string {
+	return fmt.Sprintf("{name: %s, code: %s}", c.Name, c.Code)
 }
 
 type Tag string
@@ -194,6 +202,10 @@ type Review struct {
 	Grade      Grade     `json:"grade"`
 }
 
+func (r *Review) String() string {
+	return fmt.Sprintf("{quality: %f, difficulty: %f, date: %s, tags: %v, grade: %s}", r.Quality, r.Difficulty, r.Date, r.Tags, r.Grade)
+}
+
 func GetTagByString(tagString string) (Tag, error) {
 	formattedTagString := strings.ReplaceAll(
 		strings.ReplaceAll(
@@ -224,36 +236,64 @@ func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 	if err = json.Unmarshal(bytes, &data); err != nil {
 		return err
 	}
-	r.Quality = data["qualityRating"].(float64)
-	r.Difficulty = data["difficultyRatingRounded"].(float64)
+	//fmt.Printf("data=%v\n", data)
+	f, ok := data["qualityRating"].(float64)
+	if !ok {
+		f = data["quality"].(float64)
+	}
+	r.Quality = f
+
+	f2, ok := data["difficultyRatingRounded"].(float64)
+	if !ok {
+		f2 = data["difficulty"].(float64)
+	}
+	r.Difficulty = f2
 
 	dateString := data["date"].(string)
-	t, err := time.Parse(RMPTimeConstant, dateString)
-	if err != nil {
-		return err
+	t, err := time.Parse(time.RFC3339, dateString)
+	if err != nil || t.Year() == 1 {
+		// 0001-01-01T00:00:00Z incorrectly parsed string
+		t, err = time.Parse(RMPTimeConstant, dateString)
+		if err != nil {
+			return err
+		}
 	}
-
 	r.Date = t
 
-	tagsString := data["ratingTags"].(string)
+	tagsString, ok := data["ratingTags"].(string)
+	if ok {
+		if len(tagsString) > 0 {
+			split := strings.Split(tagsString, "--")
 
-	if len(tagsString) > 0 {
-		split := strings.Split(tagsString, "--")
+			tags := make([]Tag, 0, len(split))
 
-		tags := make([]Tag, 0, len(split))
-
-		for _, elem := range split {
-			tag, err := GetTagByString(elem)
-			if err != nil {
-				return err
+			for _, elem := range split {
+				tag, err := GetTagByString(elem)
+				if err != nil {
+					return err
+				}
+				tags = append(tags, tag)
 			}
-			tags = append(tags, tag)
+			r.Tags = tags
+		} else {
+			r.Tags = []Tag{}
 		}
-		r.Tags = tags
 	} else {
-		r.Tags = []Tag{}
+		var tags []Tag
+		tagArray := data["tags"].([]any)
+		if len(tagArray) == 0 {
+			r.Tags = []Tag{}
+		} else {
+			for _, elem := range tagArray {
+				tag, err := GetTagByString(elem.(string))
+				if err != nil {
+					return err
+				}
+				tags = append(tags, tag)
+			}
+			r.Tags = tags
+		}
 	}
-
 	gradeString := data["grade"].(string)
 	grade := GetGradeByString(gradeString)
 	if !grade.IsValid() {

@@ -1,0 +1,16 @@
+# Default genqlient config; for full documentation see:
+# https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
+schema: schema.graphql
+operations:
+- genqlient.graphql
+generated: generated.go
+
+bindings:
+  RoundedFloat:
+    type: float64
+#  Teacher:
+#    type: github.com/FindMyProfessors/scraper/model.Professor
+#  Rating:
+#    type: github.com/FindMyProfessors/scraper/model.Review
+
+optional: pointer
