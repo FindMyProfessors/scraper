@@ -9,6 +9,12 @@ import (
 
 type Semester string
 
+type PageInfo struct {
+	StartCursor string `json:"startCursor,omitempty"`
+	EndCursor   string `json:"endCursor,omitempty"`
+	HasNextPage bool   `json:"hasNextPage,omitempty"`
+}
+
 var (
 	SemesterSpring Semester = "SPRING"
 	SemesterSummer Semester = "SUMMER"
