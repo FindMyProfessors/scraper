@@ -37,7 +37,7 @@ func main() {
 				scraper.SetTerm(term)
 				if ShouldSendToFMP() {
 					api := fmp.NewApi("http://localhost:8080/query")
-					err = api.UpsertSchool(context.Background(), school)
+					err = api.UpsertSchool(context.Background(), school, &term)
 					if err != nil {
 						panic(err)
 					}
@@ -77,7 +77,7 @@ func main() {
 
 	if ShouldSendToFMP() {
 		api := fmp.NewApi("http://localhost:8080/query")
-		err = api.UpsertSchool(context.Background(), school)
+		err = api.UpsertSchool(context.Background(), school, &term)
 		if err != nil {
 			panic(err)
 		}
