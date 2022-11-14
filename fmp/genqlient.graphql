@@ -21,8 +21,9 @@ query GetProfessorByRMPId($rmpId: String!, $includeSchool: Boolean!) {
     }
 }
 
-query GetProfessors($schoolId: ID!, $after: String) {
+query GetProfessors($schoolId: ID!, $after: String, $term: TermInput!) {
     professors(schoolId: $schoolId, first: 50, after: $after) {
+        # @genqlient(bind: "-")
         professors {
             id
             firstName
@@ -31,12 +32,21 @@ query GetProfessors($schoolId: ID!, $after: String) {
                 reviews {
                     id
                 }
+            }
+            teaches(term: $term, first: 50) {
+                courses {
+                    id
+                    code
+                    name
+                }
+                # @genqlient(bind: "github.com/FindMyProfessors/scraper/model.PageInfo")
                 pageInfo {
-                    endCursor
                     hasNextPage
                 }
+                totalCount
             }
         }
+        # @genqlient(bind: "github.com/FindMyProfessors/scraper/model.PageInfo")
         pageInfo {
             hasNextPage
             endCursor
@@ -44,11 +54,35 @@ query GetProfessors($schoolId: ID!, $after: String) {
         totalCount
 
     }
-
 }
+
+query GetCourses($schoolId: ID!, $input: TermInput!, $after: String) {
+    # @genqlient(bind: "-")
+    school(id: $schoolId)  {
+        courses(term: $input, first: 50, after: $after) {
+            courses {
+                id
+                name
+                code
+            }
+            # @genqlient(bind: "github.com/FindMyProfessors/scraper/model.PageInfo")
+            pageInfo{
+                hasNextPage
+            }
+            totalCount
+        }
+    }
+}
+
 
 mutation CreateProfessor($schoolId: ID!, $input: NewProfessor!) {
     createProfessor(schoolId: $schoolId, input: $input) {
+        id
+    }
+}
+
+mutation CreateCourse($schoolId: ID!, $input: NewCourse!) {
+    createCourse(schoolId: $schoolId, input: $input) {
         id
     }
 }
@@ -63,4 +97,8 @@ mutation CreateReview($professorId: ID!, $input: NewReview!) {
     createReview(professorId: $professorId, input: $input) {
         id
     }
+}
+
+mutation RegisterCourse($professorId:ID!, $courseId: ID!, $term: TermInput!) {
+    registerProfessorForCourse(professorId:$professorId, courseId: $courseId,term:$term)
 }
