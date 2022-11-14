@@ -107,14 +107,14 @@ func (a *Api) InsertNewReviews(ctx context.Context, scrapedProfessor *model.Prof
 }
 
 func (a *Api) GetAllProfessors(ctx context.Context, school *model.School) (map[string]*model.Professor, error) {
-	var professorMap map[string]*model.Professor
+	professorMap := make(map[string]*model.Professor)
 
 	var after *string
 	hasNextPage := true
 	for hasNextPage {
 		response, err := GetProfessors(ctx, a.Client, *school.ID, after)
 		if err != nil {
-			return professorMap, err
+			return nil, err
 		}
 		query := response.Professors
 
