@@ -54,7 +54,7 @@ type Professor struct {
 }
 
 func (p *Professor) String() string {
-	return fmt.Sprintf("{id: %s, firstname: %s, lastname: %s, rmpId: %s, courses:%v, reviews: %v}", p.ID, p.FirstName, p.LastName, p.RMPId, p.Courses, p.Reviews)
+	return fmt.Sprintf("{id: %s, rmpId: %s, firstname: %s, lastname: %s, rmpId: %s, courses:%v, reviews: %v}", p.ID, p.RMPId, p.FirstName, p.LastName, p.RMPId, p.Courses, p.Reviews)
 }
 
 type Course struct {
