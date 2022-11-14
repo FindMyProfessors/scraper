@@ -33,6 +33,8 @@ func main() {
 
 		for _, scraper := range SchoolScraperMap {
 			if scraper.Name() == school.Name {
+				term := GetTerm(scraper)
+				scraper.SetTerm(term)
 				if ShouldSendToFMP() {
 					api := fmp.NewApi("http://localhost:8080/query")
 					err = api.UpsertSchool(context.Background(), school)
