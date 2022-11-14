@@ -48,14 +48,10 @@ func (a *Api) UpsertSchool(ctx context.Context, school *model.School) error {
 			if err != nil {
 				return err
 			}
-			match = professor.CreateProfessor
-			match.FirstName = elem.FirstName
-			match.LastName = elem.LastName
-			match.RMPId = elem.RMPId
 			// CREATE ALL REVIEWS. NEW PROFESSOR.
 
 			for _, review := range elem.Reviews {
-				_, err = CreateReview(ctx, a.Client, match.ID, NewReview{
+				_, err = CreateReview(ctx, a.Client, professor.CreateProfessor.ID, NewReview{
 					Quality:    review.Quality,
 					Difficulty: review.Difficulty,
 					Time:       review.Date.Format(time.RFC3339),
