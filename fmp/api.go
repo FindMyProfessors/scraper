@@ -62,62 +62,68 @@ func (a *Api) UpsertSchool(ctx context.Context, school *model.School, term *mode
 	}
 
 	for _, elem := range school.Professors {
-		match, ok := professorMap[elem.FirstName+elem.LastName]
-		if ok {
-			// TODO: set rmpId via FMP API if elem.RMPId is set
-			// TODO: update course registrations if already set
-			if len(match.Reviews) > 0 {
-				newReviews, err := a.InsertNewReviews(ctx, elem, match.Reviews[0])
-				if err != nil {
-					return err
-				}
-				if newReviews > 0 {
-					fmt.Printf("%s %s has %d new reviews!\n", elem.FirstName, elem.LastName, newReviews)
-				}
-			}
-			for _, course := range elem.Courses {
-				_, ok := match.Courses[course.Code]
-				if !ok {
-					_, err = RegisterCourse(ctx, a.Client, match.ID, courseIds[course.Code], termInput)
+		err = func(professor *model.Professor) error {
+			match, ok := professorMap[professor.FirstName+professor.LastName]
+			if ok {
+				// TODO: set rmpId via FMP API if elem.RMPId is set
+				// TODO: update course registrations if already set
+				if len(match.Reviews) > 0 {
+					newReviews, err := a.InsertNewReviews(ctx, professor, match.Reviews[0])
 					if err != nil {
 						return err
 					}
+					if newReviews > 0 {
+						fmt.Printf("%s %s has %d new reviews!\n", professor.FirstName, professor.LastName, newReviews)
+					}
 				}
+				for _, course := range professor.Courses {
+					_, ok := match.Courses[course.Code]
+					if !ok {
+						_, err = RegisterCourse(ctx, a.Client, match.ID, courseIds[course.Code], termInput)
+						if err != nil {
+							return err
+						}
+					}
 
-			}
-		} else {
-			professor, err := CreateProfessor(ctx, a.Client, *school.ID, NewProfessor{
-				FirstName: elem.FirstName,
-				LastName:  elem.LastName,
-				RmpId:     &elem.RMPId,
-			})
-			if err != nil {
-				return err
-			}
-			// CREATE ALL REVIEWS. NEW PROFESSOR.
-
-			for _, review := range elem.Reviews {
-				_, err = CreateReview(ctx, a.Client, professor.CreateProfessor.ID, NewReview{
-					Quality:    review.Quality,
-					Difficulty: review.Difficulty,
-					Time:       review.Date.Format(time.RFC3339),
-					Tags:       review.Tags,
-					Grade:      review.Grade,
+				}
+			} else {
+				response, err := CreateProfessor(ctx, a.Client, *school.ID, NewProfessor{
+					FirstName: professor.FirstName,
+					LastName:  professor.LastName,
+					RmpId:     &professor.RMPId,
 				})
 				if err != nil {
 					return err
 				}
-			}
-			for _, course := range elem.Courses {
-				courseId, ok := courseIds[course.Code]
-				if !ok {
-					return fmt.Errorf("course with cod %s not found in courses retrieved from FMP", course.Code)
+				// CREATE ALL REVIEWS. NEW PROFESSOR.
+
+				for _, review := range professor.Reviews {
+					_, err = CreateReview(ctx, a.Client, response.CreateProfessor.ID, NewReview{
+						Quality:    review.Quality,
+						Difficulty: review.Difficulty,
+						Time:       review.Date.Format(time.RFC3339),
+						Tags:       review.Tags,
+						Grade:      review.Grade,
+					})
+					if err != nil {
+						return err
+					}
 				}
-				_, err = RegisterCourse(ctx, a.Client, professor.CreateProfessor.ID, courseId, termInput)
-				if err != nil {
-					return err
+				for _, course := range professor.Courses {
+					courseId, ok := courseIds[course.Code]
+					if !ok {
+						return fmt.Errorf("course with cod %s not found in courses retrieved from FMP", course.Code)
+					}
+					_, err = RegisterCourse(ctx, a.Client, response.CreateProfessor.ID, courseId, termInput)
+					if err != nil {
+						return err
+					}
 				}
 			}
+			return nil
+		}(elem)
+		if err != nil {
+			return err
 		}
 	}
 	if err != nil {
