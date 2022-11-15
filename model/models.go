@@ -96,13 +96,11 @@ func (p *Professor) UnmarshalJSON(bytes []byte) error {
 				Name: courseMap["name"].(string),
 				Code: courseCode,
 			}
-			fmt.Printf("courseCode = %v, courseMap = %v\n", courseCode, courseMap)
 		}
 
 	}
 
 	reviewsAnyArray, ok := data["reviews"].([]any)
-	fmt.Printf("reviewsAnyArray=%v, ok=%v\n", reviewsAnyArray, ok)
 	if ok {
 		p.Reviews = make([]*Review, len(reviewsAnyArray), len(reviewsAnyArray))
 
@@ -133,8 +131,6 @@ func (p *Professor) UnmarshalJSON(bytes []byte) error {
 			p.Reviews[i] = &review
 		}
 	}
-
-	fmt.Printf("unmarshalled %v into Professor %v\n", data, p)
 
 	return nil
 }
@@ -277,6 +273,7 @@ func GetGradeByString(gradeString string) Grade {
 	case "Not sure yet":
 		return GradeNotSure
 	default:
+		fmt.Printf("%s is passed in but unable to be parsed as a Grade\n", gradeString)
 		return GradeOther
 	}
 }
@@ -308,7 +305,6 @@ func GetTagByString(tagString string) (Tag, error) {
 	)
 
 	tag := Tag(formattedTagString)
-	fmt.Printf("formattedTagString=%s\n", formattedTagString)
 	if !tag.IsValid() {
 		return "", fmt.Errorf("%s is an invalid Tag", tagString)
 	}
@@ -325,14 +321,12 @@ func (r *Review) UnmarshalJSON(bytes []byte) (err error) {
 		fmt.Printf("error is also happening here\n")
 		return err
 	}
-	fmt.Printf("data=%v\n", data)
 
 	id, ok := data["id"].(string)
 	if ok {
 		r.ID = id
 	}
 
-	//fmt.Printf("data=%v\n", data)
 	f, ok := data["qualityRating"].(float64)
 	if !ok {
 		qualityAny, ok := data["quality"]
